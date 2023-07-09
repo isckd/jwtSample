@@ -1,0 +1,35 @@
+spring:
+
+  h2:
+    console:
+      enabled: true
+
+  datasource:
+    url: jdbc:h2:file:./src/main/resources/db/testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+logging:
+  level:
+    com.example: DEBUG
+
+jwt:
+  header: Authorization
+  #HS512 ????? ??? ??? ??? 512bit, ? 64byte ??? secret key? ???? ??.
+  # window powershell ?? GetBytes('') ????? ??
+  #[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('jinuk_ye-springboot_2.6.5-security-jwt-example'))
+  secret: amludWtfeWUtc3ByaW5nYm9vdF8yLjYuNS1zZWN1cml0eS1qd3QtZXhhbXBsZQ==
+  token-validity-in-seconds: 86400
+
+# .yml ????
+server.servlet.encoding.force: true
