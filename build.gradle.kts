@@ -41,9 +41,14 @@ dependencies {
 	implementation("io.springfox:springfox-boot-starter:3.0.0")
 
 	// jwt
-	compileOnly("io.jsonwebtoken:jjwt-api:0.11.2")
-	implementation("io.jsonwebtoken:jjwt-impl:0.11.2")
-	implementation("io.jsonwebtoken:jjwt-jackson:0.11.2")
+	implementation("io.jsonwebtoken:jjwt-api:0.11.2")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.2")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.2")
+
+	// actuator LatencyUtils/PauseDetector error
+	compileOnly("io.micrometer:micrometer-core:1.10.3")
+
+
 }
 
 tasks.withType<Test> {

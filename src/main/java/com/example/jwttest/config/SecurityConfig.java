@@ -13,21 +13,26 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)      // @PreAuthroize 어노테이션을 메소드 단위로 추가하기 위해 적용
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final TokenProvider tokenProvider;
+    private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     public SecurityConfig(
             TokenProvider tokenProvider,
+            CorsFilter corsFilter,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
             JwtAccessDeniedHandler jwtAccessDeniedHandler
     ) {
         this.tokenProvider = tokenProvider;
+        this.corsFilter = corsFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
     }
@@ -50,28 +55,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()                               // token 방식이라 csrf 설정 disable
+                .csrf().disable()                                       // token 방식이라 csrf 설정 disable
 
-                .exceptionHandling()                            // Exception 설정 커스텀한것들로 변경
+                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
+
+                .exceptionHandling()                                    // Exception 설정 커스텀한것들로 변경
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
-                .and()                                 // h2-console 을 위한 설정
+                .and()                                                  // h2-console 을 위한 설정
                 .headers()
                 .frameOptions()
                 .sameOrigin()
 
-                .and()                                  // 세션을 사용하지 않기 때문에 STATELESS 로 설정
+                .and()                                                  // 세션을 사용하지 않기 때문에 STATELESS 로 설정
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/hello").permitAll()
-                .antMatchers("/api/authenticate").permitAll()   // 로그인, 회원가입 API 는 누구나 접근 가능
+                .antMatchers("/api/authenticate").permitAll()          // 로그인, 회원가입 API 는 누구나 접근 가능
                 .antMatchers("/api/signup").permitAll()
 
-                .antMatchers("/swagger-ui/**").permitAll()               // swagger-ui 허용
+                .antMatchers("/swagger-ui/**").permitAll()             // swagger-ui 허용
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/v3/**").permitAll()
 

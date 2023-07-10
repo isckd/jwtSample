@@ -3,6 +3,7 @@ package com.example.jwttest.service;
 import com.example.jwttest.dto.UserDto;
 import com.example.jwttest.entity.Authority;
 import com.example.jwttest.entity.User;
+import com.example.jwttest.exception.DuplicateMemberException;
 import com.example.jwttest.repository.UserRepository;
 import com.example.jwttest.util.SecutiryUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +33,7 @@ public class UserService {
     @Transactional
     public User singup(UserDto userDto) {
         if (userRepository.findOneWithAuthoritiesByUsername(userDto.getUsername()).orElse(null) != null) {
-            throw new RuntimeException(userDto.getUsername() + "는 이미 가입되어 있는 유저입니다.");
+            throw new DuplicateMemberException(userDto.getUsername() + "는 이미 가입되어 있는 유저입니다.");
         }
 
         Authority authority = Authority.builder()
