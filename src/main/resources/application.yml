@@ -34,7 +34,7 @@ jwt:
   # window powershell ?? GetBytes('') ????? ??
   #[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('jinuk_ye-springboot_2.6.5-security-jwt-example-java8-with-h2-database-toy-project'))
   secret: amludWtfeWUtc3ByaW5nYm9vdF8yLjYuNS1zZWN1cml0eS1qd3QtZXhhbXBsZS1qYXZhOC13aXRoLWgyLWRhdGFiYXNlLXRveS1wcm9qZWN0
-  token-validity-in-seconds: 10
+  token-validity-in-seconds: 15
 
 # .yml ????
 server.servlet.encoding.force: true

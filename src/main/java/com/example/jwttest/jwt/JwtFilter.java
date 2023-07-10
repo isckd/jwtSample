@@ -22,12 +22,12 @@ public class JwtFilter extends GenericFilterBean {
     }
 
     /**
-     *  토큰의 인증정보를 SecurityContext에 저장하는 역할 수행
+     *  토큰의 인증정보를 SecurityContext 에 저장하는 역할 수행
      */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest =  (HttpServletRequest) servletRequest;
-        String jwt = resolveToken(httpServletRequest);        // 토큰 정보를 꺼내온다.
+        String jwt = resolveToken(httpServletRequest);        // 토1큰 정보를 꺼내온다.
         String requestURI = httpServletRequest.getRequestURI();
 
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
