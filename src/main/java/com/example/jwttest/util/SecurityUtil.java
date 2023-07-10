@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Optional;
 
 @Log4j2
-public class SecutiryUtil {
+public class SecurityUtil {
 
 
     /**

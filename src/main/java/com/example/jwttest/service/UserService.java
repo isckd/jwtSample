@@ -4,14 +4,14 @@ import com.example.jwttest.dto.UserDto;
 import com.example.jwttest.entity.Authority;
 import com.example.jwttest.entity.User;
 import com.example.jwttest.exception.DuplicateMemberException;
+import com.example.jwttest.exception.NotFoundMemberException;
 import com.example.jwttest.repository.UserRepository;
-import com.example.jwttest.util.SecutiryUtil;
+import com.example.jwttest.util.SecurityUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.Collections;
-import java.util.Optional;
 
 /**
  * 회원가입, 유저정보 조회
@@ -31,7 +31,7 @@ public class UserService {
      * 회원가입
      */
     @Transactional
-    public User singup(UserDto userDto) {
+    public UserDto singup(UserDto userDto) {
         if (userRepository.findOneWithAuthoritiesByUsername(userDto.getUsername()).orElse(null) != null) {
             throw new DuplicateMemberException(userDto.getUsername() + "는 이미 가입되어 있는 유저입니다.");
         }
@@ -48,24 +48,32 @@ public class UserService {
                 .activated(true)
                 .build();
 
-        return userRepository.save(user);
+        return UserDto.from(userRepository.save(user));
     }
 
     /**
-     * 유저정보 조회
+     * 내 정보 조회 (ROLE_USER)
      */
-    @Transactional
-    public Optional<User> getMyUserWithAuthorities() {
-        // getCurrentUsername() 의 리턴값이 Optional 이므로 flatMap 으로 꺼낸다.
-        return SecutiryUtil.getCurrentUsername().flatMap(userRepository::findOneWithAuthoritiesByUsername);
+    @Transactional(readOnly = true)
+    public UserDto getUserWithAuthorities(String username) {
+//        return UserDto.from(userRepository.findOneWithAuthoritiesByUsername(username).orElse(null));
+        return UserDto.from(
+                userRepository.findOneWithAuthoritiesByUsername(username)
+                        .orElseThrow(() -> new NotFoundMemberException("Member not found"))
+        );
     }
 
     /**
-     * 내 정보 조회
+     * 유저정보 조회 (ROLE_ADMIN)
      */
-    @Transactional
-    public Optional<User> getUserWithAuthorities(String username) {
-        return userRepository.findOneWithAuthoritiesByUsername(username);
+    @Transactional(readOnly = true)
+    public UserDto getMyUserWithAuthorities() {
+        return UserDto.from(
+                SecurityUtil.getCurrentUsername()       // SecurityContext 에서 username 을 가져온다.
+                        .flatMap(userRepository::findOneWithAuthoritiesByUsername)      // username 을 기준으로 User 정보를 가져온다.
+                        .orElseThrow(() -> new NotFoundMemberException("Member not found"))     // 유저 정보가 없으면 에러
+        );
     }
+
 
 }

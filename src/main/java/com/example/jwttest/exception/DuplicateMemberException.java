@@ -1,7 +1,8 @@
 package com.example.jwttest.exception;
 
-import org.springframework.security.core.parameters.P;
-
+/**
+ * 중복된 회원가입 Exception
+ */
 public class DuplicateMemberException extends RuntimeException {
 
     public DuplicateMemberException() {

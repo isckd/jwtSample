@@ -17,6 +17,9 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @ControllerAdvice
 public class MethodArgumentNotValidExceptionHandler {
 
+    /**
+     * 유효성 검사 ( @Valid ) 실패 시 발생하는 Exception
+     */
     @ResponseStatus(BAD_REQUEST)
     @ResponseBody
     @ExceptionHandler(MethodArgumentNotValidException.class)

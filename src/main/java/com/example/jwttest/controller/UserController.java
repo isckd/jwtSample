@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> signup(
+    public ResponseEntity<UserDto> signup(
             @Valid @RequestBody UserDto userDto
     ) {
         return ResponseEntity.ok(userService.singup(userDto));
@@ -42,9 +42,8 @@ public class UserController {
      */
     @GetMapping("/user")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")        // USER, ADMIN 권한 접근 가능
-    public ResponseEntity<User> getMyUserInfo(HttpServletRequest request) {
-        log.info(request.getHeader("Authorization"));       // 헤더 잘 나오는지
-        return ResponseEntity.ok(userService.getMyUserWithAuthorities().get());
+    public ResponseEntity<UserDto> getMyUserInfo(HttpServletRequest request) {
+        return ResponseEntity.ok(userService.getMyUserWithAuthorities());
     }
 
     /**
@@ -52,7 +51,7 @@ public class UserController {
      */
     @GetMapping("/user/{username}")
     @PreAuthorize("hasAnyRole('ADMIN')")                // ADMIN 권한만 접근 가능
-    public ResponseEntity<User> getUserInfo(@PathVariable String username) {
-        return ResponseEntity.ok(userService.getUserWithAuthorities(username).get());
+    public ResponseEntity<UserDto> getUserInfo(@PathVariable String username) {
+        return ResponseEntity.ok(userService.getUserWithAuthorities(username));
     }
 }
