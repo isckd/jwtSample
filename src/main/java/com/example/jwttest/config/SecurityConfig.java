@@ -70,6 +70,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/hello").permitAll()
                 .antMatchers("/api/authenticate").permitAll()   // 로그인, 회원가입 API 는 누구나 접근 가능
                 .antMatchers("/api/signup").permitAll()
+
+                .antMatchers("/swagger-ui/**").permitAll()               // swagger-ui 허용
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/v3/**").permitAll()
+
                 .anyRequest().authenticated()
 
                 .and()

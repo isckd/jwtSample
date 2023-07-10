@@ -27,12 +27,18 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+	compileOnly("org.springframework.boot:spring-boot-starter-actuator")
+
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.h2database:h2")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
+
+	// swagger 3.0
+	implementation("io.springfox:springfox-boot-starter:3.0.0")
 
 	// jwt
 	compileOnly("io.jsonwebtoken:jjwt-api:0.11.2")
