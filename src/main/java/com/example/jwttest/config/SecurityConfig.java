@@ -1,6 +1,6 @@
 package com.example.jwttest.config;
 
-import com.example.jwttest.jwt.JwtAccessDeniedHandler;
+import com.example.jwttest.handler.JwtAccessDeniedHandler;
 import com.example.jwttest.jwt.JwtAuthenticationEntryPoint;
 import com.example.jwttest.jwt.JwtSecurityConfig;
 import com.example.jwttest.jwt.TokenProvider;

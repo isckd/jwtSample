@@ -1,5 +1,8 @@
 package com.example.jwttest.jwt;
 
+import com.example.jwttest.entity.RefreshToken;
+import com.example.jwttest.exception.CustomException;
+import com.example.jwttest.exception.ErrorCode;
 import com.example.jwttest.repository.RefreshTokenRepository;
 import com.example.jwttest.repository.UserRepository;
 import io.jsonwebtoken.*;
@@ -11,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +27,7 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Component
@@ -104,32 +109,29 @@ public class TokenProvider implements InitializingBean {
     /**
      * 토큰의 유효성 검증을 수행하는 메소드
      */
-    public String validateToken(String token, String refreshToken) {
+    public String validateToken(String token, String refreshToken) throws CustomException{
         try {
             Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
             return token;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명");
         } catch (ExpiredJwtException e) {
             log.info(e.getMessage() + " 만료된 access 토큰");
-            try {
-                String expiredTokenUsername = e.getClaims().getSubject();
-                if((refreshTokenRepository.findById(expiredTokenUsername).get().getRefreshToken()).equals(refreshToken)) {
-                    log.info("access token 만료되었지만, refresh token 일치하여 재발급");
-                    return createNewToken(expiredTokenUsername);
-                } else {
-                    log.info("만료된 access, refresh 토큰");
-                }
-            } catch (Exception ex) {
-                log.info(ex.getStackTrace());
-                log.info(ex.getMessage() + " Refresh Token 검증 시 에러 발생");
+
+            String expiredTokenUsername = e.getClaims().getSubject();
+            RefreshToken storedRefreshToken = refreshTokenRepository.findById(expiredTokenUsername)
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_REFRESH_TOKEN));
+            if((storedRefreshToken.getRefreshToken()).equals(refreshToken)) {
+                log.info("access token 만료되었지만, refresh token 일치하여 재발급");
+                return createNewToken(expiredTokenUsername);
+            } else {
+                throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
             }
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰");
+            throw new CustomException(ErrorCode.UNSUPPORTED_JWT_TOKEN);
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+            throw new CustomException(ErrorCode.INVALID_JWT_TOKEN);
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            throw new CustomException(ErrorCode.INVALID_SIGNATURE);
         }
-        return "";
     }
 
     /**

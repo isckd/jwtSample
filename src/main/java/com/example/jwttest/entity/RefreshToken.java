@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 // redis key 는 refreshToken + @Id 로 정의된다.
 // timeToLive : second 단위
-@RedisHash(value = "refreshToken", timeToLive = 60)
+@RedisHash(value = "refreshToken", timeToLive = 30)
 public class RefreshToken {
     @Id
     private String username;

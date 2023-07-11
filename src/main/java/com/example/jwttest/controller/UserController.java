@@ -35,7 +35,7 @@ public class UserController {
     public ResponseEntity<UserDto> signup(
             @Valid @RequestBody UserDto userDto
     ) {
-        return ResponseEntity.ok(userService.singup(userDto));
+        return ResponseEntity.ok(userService.signup(userDto));
     }
 
     /**
