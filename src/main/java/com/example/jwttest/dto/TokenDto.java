@@ -3,6 +3,8 @@ package com.example.jwttest.dto;
 
 import lombok.*;
 
+import java.util.Optional;
+
 /**
  * Response 에 사용할 Token Dto
  */
@@ -14,4 +16,7 @@ import lombok.*;
 public class TokenDto {
 
     private String token;
+
+    private String refreshToken;
+
 }

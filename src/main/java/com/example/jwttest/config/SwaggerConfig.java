@@ -26,6 +26,7 @@ import java.util.List;
 
 @Configuration
 @EnableSwagger2
+@SuppressWarnings("unchecked")
 public class SwaggerConfig {
     @Bean
     public Docket api() {

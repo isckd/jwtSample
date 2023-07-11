@@ -28,10 +28,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-	compileOnly("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 
 	compileOnly("org.projectlombok:lombok")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
+	implementation("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.h2database:h2")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -48,7 +48,8 @@ dependencies {
 	// actuator LatencyUtils/PauseDetector error
 	compileOnly("io.micrometer:micrometer-core:1.10.3")
 
-
+	// redis
+	implementation ("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 tasks.withType<Test> {

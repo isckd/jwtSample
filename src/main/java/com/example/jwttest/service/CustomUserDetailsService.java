@@ -13,10 +13,8 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Component("userDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
-
 
     private final UserRepository userRepository;
 

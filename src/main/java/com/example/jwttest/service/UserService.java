@@ -1,7 +1,9 @@
 package com.example.jwttest.service;
 
+import com.example.jwttest.dto.LoginDto;
 import com.example.jwttest.dto.UserDto;
 import com.example.jwttest.entity.Authority;
+import com.example.jwttest.entity.RefreshToken;
 import com.example.jwttest.entity.User;
 import com.example.jwttest.exception.DuplicateMemberException;
 import com.example.jwttest.exception.NotFoundMemberException;
@@ -11,7 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.Collections;
+import java.util.UUID;
 
 /**
  * 회원가입, 유저정보 조회
@@ -25,6 +29,14 @@ public class UserService {
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    /**
+     * refresh 토큰 생성
+     */
+    @Transactional(readOnly = true)
+    public RefreshToken generateRefreshToken(String username) {
+        return new RefreshToken(UUID.randomUUID().toString(), username);
     }
 
     /**
@@ -44,7 +56,7 @@ public class UserService {
                 .username(userDto.getUsername())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .nickname(userDto.getNickname())
-                .authorities(Collections.singleton(authority))      // 권한은 한개만 준다.
+                .authorities(Collections.singleton(authority))
                 .activated(true)
                 .build();
 
@@ -74,6 +86,7 @@ public class UserService {
                         .orElseThrow(() -> new NotFoundMemberException("Member not found"))     // 유저 정보가 없으면 에러
         );
     }
+
 
 
 }

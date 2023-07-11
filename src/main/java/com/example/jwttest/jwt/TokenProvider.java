@@ -1,5 +1,7 @@
 package com.example.jwttest.jwt;
 
+import com.example.jwttest.repository.RefreshTokenRepository;
+import com.example.jwttest.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -7,10 +9,14 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -28,13 +34,17 @@ public class TokenProvider implements InitializingBean {
     private final String secret;
     private final long tokenValidityInMilliseconds;
 
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserDetailsService userDetailsService;
     private Key key;
 
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
+            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds, RefreshTokenRepository refreshTokenRepository, UserDetailsService userDetailsService) {
         this.secret = secret;
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.userDetailsService = userDetailsService;
     }
 
 
@@ -94,21 +104,44 @@ public class TokenProvider implements InitializingBean {
     /**
      * 토큰의 유효성 검증을 수행하는 메소드
      */
-    public boolean validateToken(String token) {
+    public String validateToken(String token, String refreshToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+            return token;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명");
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰");
+            log.info(e.getMessage() + " 만료된 access 토큰");
+            try {
+                String expiredTokenUsername = e.getClaims().getSubject();
+                if((refreshTokenRepository.findById(expiredTokenUsername).get().getRefreshToken()).equals(refreshToken)) {
+                    log.info("access token 만료되었지만, refresh token 일치하여 재발급");
+                    return createNewToken(expiredTokenUsername);
+                } else {
+                    log.info("만료된 access, refresh 토큰");
+                }
+            } catch (Exception ex) {
+                log.info(ex.getStackTrace());
+                log.info(ex.getMessage() + " Refresh Token 검증 시 에러 발생");
+            }
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰");
         } catch (IllegalArgumentException e) {
             log.info("JWT 토큰이 잘못되었습니다.");
         }
-        return false;
+        return "";
     }
 
+    /**
+     * access token 만료, refresh token 일치시 access token 재발급하여 SecurityContext 에 저장
+     */
+    private String createNewToken(String expiredTokenUsername) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(expiredTokenUsername);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return createToken(authentication);
+    }
 
 }
