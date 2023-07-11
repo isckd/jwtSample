@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -17,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Log4j2
-public class JwtFilter extends GenericFilterBean {
+public class JwtFilter extends OncePerRequestFilter {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";      // 헤더의 키 값
     public static final String REFRESH_TOKEN_HEADER = "refreshToken";      // refresh token 키 값
@@ -32,14 +33,12 @@ public class JwtFilter extends GenericFilterBean {
      *  토큰의 인증정보를 SecurityContext 에 보내는 역할
      */
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest httpServletRequest =  (HttpServletRequest) servletRequest;
-        HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         log.debug("URI : " + httpServletRequest.getRequestURI());
 
         TokenDto tokenDto = resolveToken(httpServletRequest);                               // 토큰 정보를 꺼내온다.
         if (tokenDto == null || tokenDto.getToken() == null || tokenDto.getRefreshToken() == null) {
-            filterChain.doFilter(servletRequest, servletResponse);                          // 토큰이 없으면 Security Context 에 저장하지 않는다.
+            filterChain.doFilter(httpServletRequest, httpServletResponse);                          // 토큰이 없으면 Security Context 에 저장하지 않는다.
             return;
         }
 
@@ -68,7 +67,7 @@ public class JwtFilter extends GenericFilterBean {
             httpServletResponse.addHeader(AUTHORIZATION_HEADER, "Bearer " + jwt);     // response header 에 access token 추가
         }
 
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
     /**

@@ -1,13 +1,12 @@
 package com.example.jwttest.entity;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 
 // redis key 는 refreshToken + @Id 로 정의된다.
 // timeToLive : second 단위
-@RedisHash(value = "refreshToken", timeToLive = 30)
+@RedisHash(value = "refreshToken", timeToLive = 10)
 public class RefreshToken {
     @Id
     private String username;
