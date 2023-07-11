@@ -26,6 +26,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/hello")
+    public ResponseEntity<String> returnHello() {
+        return ResponseEntity.ok("Hello World!");
+    }
+
     @PostMapping("/test-redirect")
     public void testRediredct(HttpServletResponse response) throws IOException{
         response.sendRedirect("/api/user");

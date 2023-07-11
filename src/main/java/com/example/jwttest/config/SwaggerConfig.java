@@ -47,6 +47,11 @@ public class SwaggerConfig {
                 .build();
     }
 
+    /**
+     *  Springboot 2.6 이상에서 Swagger 3.0 미지원.. 그로 인해 컴파일 시 actuator 와 swagger 충돌 발생  <br>
+     *  -> 아래 코드로 해결.
+     *  또한 application.yml 파일에 spring.mvc.pathmatch.matching-strategy: ant_path_matcher 추가
+     */
     @Bean
     public WebMvcEndpointHandlerMapping webEndpointServletHandlerMapping(WebEndpointsSupplier webEndpointsSupplier
             , ServletEndpointsSupplier servletEndpointsSupplier
