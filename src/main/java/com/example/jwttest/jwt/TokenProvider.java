@@ -4,7 +4,7 @@ import com.example.jwttest.entity.RefreshToken;
 import com.example.jwttest.exception.CustomException;
 import com.example.jwttest.exception.ErrorCode;
 import com.example.jwttest.repository.RefreshTokenRepository;
-import com.example.jwttest.repository.UserRepository;
+import com.example.jwttest.service.CustomUserDetailsService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -12,9 +12,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,7 +25,7 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -41,15 +39,17 @@ public class TokenProvider implements InitializingBean {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
     private Key key;
 
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds, RefreshTokenRepository refreshTokenRepository, UserDetailsService userDetailsService) {
+            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds, RefreshTokenRepository refreshTokenRepository, UserDetailsService userDetailsService, CustomUserDetailsService customUserDetailsService) {
         this.secret = secret;
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
         this.refreshTokenRepository = refreshTokenRepository;
         this.userDetailsService = userDetailsService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
 
@@ -115,12 +115,23 @@ public class TokenProvider implements InitializingBean {
             return token;
         } catch (ExpiredJwtException e) {
             log.info(e.getMessage() + " 만료된 access 토큰");
-
             String expiredTokenUsername = e.getClaims().getSubject();
-            RefreshToken storedRefreshToken = refreshTokenRepository.findById(expiredTokenUsername)
-                .orElseThrow(() -> new CustomException(ErrorCode.NO_REFRESH_TOKEN));
+            Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findById(expiredTokenUsername);
+
+            // TODO 공격자가 refresh 토큰을 아무렇게나 넣어도 되는건가? -> refresh 토큰의 유효성 검증도 진행하자.
+            if (!optionalRefreshToken.isPresent()) {                                    // redis 에서 refresh token 을 찾을 수 없는 경우
+                log.info("refresh token 만료되어 재발급");
+                customUserDetailsService.generateRefreshToken(expiredTokenUsername);
+                return createNewToken(expiredTokenUsername);
+            }
+
+            RefreshToken storedRefreshToken = optionalRefreshToken.get();
+
             if((storedRefreshToken.getRefreshToken()).equals(refreshToken)) {
+                // TODO ADMIN 권한에 접근 못하는게 우선인데, USER 가 여기 먼저 접근하는 경우는?
                 log.info("access token 만료되었지만, refresh token 일치하여 재발급");
+                log.info("RTS 전략으로 refresh token 사용했으므로 재발급");
+                customUserDetailsService.generateRefreshToken(expiredTokenUsername);
                 return createNewToken(expiredTokenUsername);
             } else {
                 throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);

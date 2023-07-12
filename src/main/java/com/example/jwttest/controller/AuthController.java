@@ -6,7 +6,7 @@ import com.example.jwttest.entity.RefreshToken;
 import com.example.jwttest.jwt.JwtFilter;
 import com.example.jwttest.jwt.TokenProvider;
 import com.example.jwttest.repository.RefreshTokenRepository;
-import com.example.jwttest.service.UserService;
+import com.example.jwttest.service.CustomUserDetailsService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,14 +31,14 @@ public class AuthController {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
-    private final UserService userService;
+    private final CustomUserDetailsService customUserDetailsService;
 
 
-    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, RefreshTokenRepository refreshTokenRepository, UserService userService) {
+    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, RefreshTokenRepository refreshTokenRepository, CustomUserDetailsService customUserDetailsService) {
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.refreshTokenRepository = refreshTokenRepository;
-        this.userService = userService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
 
@@ -54,7 +55,7 @@ public class AuthController {
 
         String jwt = tokenProvider.createToken(authentication);
 
-        RefreshToken refreshToken = userService.generateRefreshToken(loginDto.getUsername());
+        RefreshToken refreshToken = customUserDetailsService.generateRefreshToken(loginDto.getUsername());
         refreshTokenRepository.save(refreshToken);
 
         HttpHeaders httpHeaders = new HttpHeaders();

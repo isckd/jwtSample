@@ -1,5 +1,6 @@
 package com.example.jwttest.service;
 
+import com.example.jwttest.entity.RefreshToken;
 import com.example.jwttest.entity.User;
 import com.example.jwttest.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,9 +9,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component("userDetailsService")
@@ -49,5 +51,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getUsername(),
                 user.getPassword(),
                 grantedAuthorities);
+    }
+
+    /**
+     * refresh 토큰 생성
+     */
+    @Transactional(readOnly = true)
+    public RefreshToken generateRefreshToken(String username) {
+        return new RefreshToken(UUID.randomUUID().toString(), username);
     }
 }

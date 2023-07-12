@@ -30,14 +30,6 @@ public class UserService {
     }
 
     /**
-     * refresh 토큰 생성
-     */
-    @Transactional(readOnly = true)
-    public RefreshToken generateRefreshToken(String username) {
-        return new RefreshToken(UUID.randomUUID().toString(), username);
-    }
-
-    /**
      * 회원가입
      */
     @Transactional

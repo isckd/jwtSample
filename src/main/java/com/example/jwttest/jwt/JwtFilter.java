@@ -36,7 +36,7 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         log.debug("URI : " + httpServletRequest.getRequestURI());
 
-        TokenDto tokenDto = resolveToken(httpServletRequest);                               // 토큰 정보를 꺼내온다.
+        TokenDto tokenDto = resolveToken(httpServletRequest);                                       // 토큰 정보를 꺼내온다.
         if (tokenDto == null || tokenDto.getToken() == null || tokenDto.getRefreshToken() == null) {
             filterChain.doFilter(httpServletRequest, httpServletResponse);                          // 토큰이 없으면 Security Context 에 저장하지 않는다.
             return;
@@ -52,6 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
             httpServletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);             // 403, 권한 없음
             httpServletResponse.setContentType("application/json");
             httpServletResponse.getWriter().write(String.format("{\"error\": \"%s\"}", e.getMessage()));
+            log.error("잘못된 접근 발생! 로그 확인 요망");
             return;
         }
 
