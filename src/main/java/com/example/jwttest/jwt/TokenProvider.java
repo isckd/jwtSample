@@ -1,5 +1,6 @@
 package com.example.jwttest.jwt;
 
+import com.example.jwttest.dto.TokenDto;
 import com.example.jwttest.entity.RefreshToken;
 import com.example.jwttest.exception.CustomException;
 import com.example.jwttest.exception.ErrorCode;
@@ -86,7 +87,7 @@ public class TokenProvider implements InitializingBean {
      * 토큰을 파라미터로 받아서 토큰에 담겨있는 정보를 이용해 Authentication 객체를 리턴하는 메소드
      */
     public Authentication getAuthentication(String token) {
-        // 토큰을 이용해서 Claims 객체를 생성한다.
+        // 토큰을 이용해서 Claims 객체를 생성한다. 이 때 토큰 검증을 실시한다.
         Claims claims = Jwts
                 .parserBuilder()
                 .setSigningKey(key)
@@ -107,30 +108,29 @@ public class TokenProvider implements InitializingBean {
     }
 
     /**
-     * 토큰의 유효성 검증을 수행하는 메소드
+     * 토큰의 유효성(만료) 검증을 수행하는 메소드
      */
-    public String validateToken(String token, String refreshToken) throws CustomException{
+    public TokenDto validateToken(String token, String refreshToken) throws CustomException{
         try {
             Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-            return token;
+            return new TokenDto(token, refreshToken);
         } catch (ExpiredJwtException e) {
             log.info(e.getMessage() + " 만료된 access 토큰");
             String expiredTokenUsername = e.getClaims().getSubject();
             Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findById(expiredTokenUsername);
 
-            if (!optionalRefreshToken.isPresent()) {                                            // redis 에서 refresh token 을 찾을 수 없는 경우
-                log.info("refresh token 만료되어 재발급");
-                customUserDetailsService.generateRefreshToken(expiredTokenUsername);
-                return createNewToken(expiredTokenUsername);
+            if (!optionalRefreshToken.isPresent()) {                                        // redis 에서 refresh token 을 찾을 수 없는 경우
+                log.info("access token, refresh token 모두 만료되어 접근 제한");
+                throw new CustomException(ErrorCode.EXPIRED_ACCESS_REFRESH_TOKEN);
             }
 
-            if((optionalRefreshToken.get().getRefreshToken()).equals(refreshToken)) {
+            if((optionalRefreshToken.get().getRefreshToken()).equals(refreshToken)) {       // redis 에서 refresh token 을 찾고 주어진 토큰과 일치하는 경우
                 log.info("RTS 전략 -> refresh token 사용했으므로 삭제 후 재발급");
-                customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername);
+                refreshToken = customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername);
                 log.info("access token 만료되었지만, refresh token 일치하여 재발급");
-                return createNewToken(expiredTokenUsername);
-            } else {
-                throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
+                return new TokenDto(createNewToken(expiredTokenUsername), refreshToken);
+            } else {                                                                        // redis 에서 username 에 대한 refresh token 을 찾았지만 주어진 토큰과 일치하지 않는 경우
+                throw new CustomException(ErrorCode.REFRESH_TOKEN_ERROR);
             }
         } catch (UnsupportedJwtException e) {
             throw new CustomException(ErrorCode.UNSUPPORTED_JWT_TOKEN);

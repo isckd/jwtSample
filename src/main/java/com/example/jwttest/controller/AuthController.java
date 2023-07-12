@@ -28,16 +28,12 @@ public class AuthController {
 
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
-    private final RefreshTokenRepository refreshTokenRepository;
-
     private final CustomUserDetailsService customUserDetailsService;
 
 
     public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, RefreshTokenRepository refreshTokenRepository, CustomUserDetailsService customUserDetailsService) {
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
-        this.refreshTokenRepository = refreshTokenRepository;
         this.customUserDetailsService = customUserDetailsService;
     }
 
@@ -55,12 +51,12 @@ public class AuthController {
 
         String jwt = tokenProvider.createToken(authentication);
 
-        RefreshToken refreshToken = customUserDetailsService.generateRefreshToken(loginDto.getUsername());
+        String refreshToken = customUserDetailsService.generateRefreshToken(loginDto.getUsername());
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);   // 헤더에 토큰을 넣는다.
-        httpHeaders.add("refreshToken", refreshToken.getRefreshToken());
+        httpHeaders.add(JwtFilter.REFRESH_TOKEN_HEADER, refreshToken);
 
-        return new ResponseEntity<>(new TokenDto(jwt, refreshToken.getRefreshToken()), httpHeaders, HttpStatus.OK);     // 임시로 바디에도 넣는다.
+        return new ResponseEntity<>(new TokenDto(jwt, refreshToken), httpHeaders, HttpStatus.OK);     // 임시로 바디에도 넣는다.
     }
 }

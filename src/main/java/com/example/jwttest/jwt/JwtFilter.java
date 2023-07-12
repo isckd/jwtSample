@@ -6,16 +6,14 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 @Log4j2
 public class JwtFilter extends OncePerRequestFilter {
@@ -36,52 +34,93 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         log.debug("URI : " + httpServletRequest.getRequestURI());
 
-        TokenDto tokenDto = resolveToken(httpServletRequest);                                       // 토큰 정보를 꺼내온다.
-        if (tokenDto == null || tokenDto.getToken() == null || tokenDto.getRefreshToken() == null) {
-            filterChain.doFilter(httpServletRequest, httpServletResponse);                          // 토큰이 없으면 Security Context 에 저장하지 않는다.
+        Optional<TokenDto> tokenDto = resolveToken(httpServletRequest);                                       // 토큰 정보를 꺼내온다.
+        if (!tokenDto.isPresent()) {
+            filterChain.doFilter(httpServletRequest, httpServletResponse);                                    // 토큰이 없으면 토큰 검증을 실시하지 않는다.
             return;
         }
 
-        String accessToken = tokenDto.getToken();
-        String refreshToken = tokenDto.getRefreshToken();
-
-        String jwt = "";
         try {
-            jwt = tokenProvider.validateToken(accessToken, refreshToken);                 // validate 로 access, refresh token 검증
+            TokenDto newTokens = tokenProvider.validateToken(tokenDto.get().getToken(), tokenDto.get().getRefreshToken());
+            processValidTokens(newTokens, httpServletRequest, httpServletResponse, filterChain);
         } catch (CustomException e) {
-            httpServletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);             // 403, 권한 없음
-            httpServletResponse.setContentType("application/json");
-            httpServletResponse.getWriter().write(String.format("{\"error\": \"%s\"}", e.getMessage()));
-            log.error("잘못된 접근 발생! 로그 확인 요망");
-            return;
+            handleInvalidTokens(e, httpServletResponse);
         }
 
-        if (StringUtils.hasText(jwt)) {
-            Authentication authentication = tokenProvider.getAuthentication(jwt);           // 토큰 정보를 이용해 Authentication 객체를 생성한다.
-            SecurityContextHolder.getContext().setAuthentication(authentication);           // SecurityContext 에 Authentication 객체를 저장한다.
-            log.debug("Security Context 에 '{}' 인증 정보를 저장", authentication.getName());
-        } else {
-            log.debug("유효한 JWT 토큰이 없습니다");
-        }
+//        String newAccessToken = "";
+//        String newRefreshToken = "";
+//        try {
+//            TokenDto newtokens = tokenProvider.validateToken(accessToken, refreshToken);         // validate 로 access, refresh token 만료 검증
+//            newAccessToken = newtokens.getToken();
+//            newRefreshToken = newtokens.getRefreshToken();
+//        } catch (CustomException e) {
+//            httpServletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);                            // 403, 권한 없음
+//            httpServletResponse.setContentType("application/json");
+//            httpServletResponse.getWriter().write(String.format("{\"error\": \"%s\"}", e.getMessage()));
+//            log.error("잘못된 접근 발생! 로그 확인 요망");
+//            return;
+//        }
 
-        if (!jwt.equals(accessToken)) {                                                     // access token 새로 발급 시
-            httpServletResponse.addHeader(AUTHORIZATION_HEADER, "Bearer " + jwt);     // response header 에 access token 추가
-        }
-
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
+//        if (StringUtils.hasText(newAccessToken)) {
+//            Authentication authentication = tokenProvider.getAuthentication(newAccessToken);           // 토큰 정보를 이용해 Authentication 객체를 생성한다.
+//            SecurityContextHolder.getContext().setAuthentication(authentication);           // SecurityContext 에 Authentication 객체를 저장한다.
+//            log.debug("Security Context 에 '{}' 인증 정보를 저장", authentication.getName());
+//        } else {
+//            log.debug("유효한 JWT 토큰이 없습니다");
+//        }
+//
+//        if (!newAccessToken.equals(accessToken)) {                                                     // access token 새로 발급 시
+//            httpServletResponse.addHeader(AUTHORIZATION_HEADER, "Bearer " + newAccessToken);     // response header 에 access token 추가
+//            httpServletResponse.addHeader(REFRESH_TOKEN_HEADER, newRefreshToken);           // access token 새로 발급 시 refresh token 도 새로 발급되므로 넣는다.
+//        }
+//
+//        filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
     /**
-     * Request Header 에서 토큰 정보를 꺼내오기 위한 메소드
+     * Request Header 에서 토큰 정보를 꺼내오기 위한 메서드
      */
-    private TokenDto resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);                           // 헤더에서 토큰 정보를 꺼내온다.
+    private Optional<TokenDto> resolveToken(HttpServletRequest request) {
+        String accessToken = request.getHeader(AUTHORIZATION_HEADER);                           // 헤더에서 토큰 정보를 꺼내온다.
         String refreshToken = request.getHeader(REFRESH_TOKEN_HEADER);
 
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {            // 토큰 정보가 존재하고, Bearer로 시작하는 경우
-            bearerToken = bearerToken.split(" ")[1].trim();                               // Bearer 다음 문자열을 반환한다.
-            return new TokenDto(bearerToken, refreshToken);
+        if (StringUtils.hasText(accessToken) && accessToken.startsWith("Bearer ")) {            // 토큰 정보가 존재하고, Bearer로 시작하는 경우
+            accessToken = accessToken.split(" ")[1].trim();                               // Bearer 다음 문자열을 반환한다.
+            return Optional.of(new TokenDto(accessToken, refreshToken));
         }
-        return null;
+        return Optional.empty();
+    }
+
+
+    /**
+     *  토큰이 유효하지 않을 때 처리하는 메서드
+     */
+    private void handleInvalidTokens(CustomException e, HttpServletResponse response)
+            throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json");
+        response.getWriter().write(String.format("{\"error\": \"%s\"}", e.getMessage()));
+        log.error("잘못된 접근 발생! 로그 확인 요망");
+    }
+
+    /**
+     * 토큰이 유효할 때 SecurityContext 에 저장하는 메서드
+     */
+    private void processValidTokens(TokenDto newTokens, HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (StringUtils.hasText(newTokens.getToken())) {
+            Authentication authentication = tokenProvider.getAuthentication(newTokens.getToken());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("Save '{}' authentication information in Security Context", authentication.getName());
+
+            if (!newTokens.getToken().equals(newTokens.getToken())) {
+                response.addHeader(AUTHORIZATION_HEADER, "Bearer " + newTokens.getToken());
+                response.addHeader(REFRESH_TOKEN_HEADER, newTokens.getRefreshToken());
+            }
+        } else {
+            log.debug("No valid JWT token");
+        }
+
+        chain.doFilter(request, response);
     }
 }

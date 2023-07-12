@@ -59,18 +59,18 @@ public class CustomUserDetailsService implements UserDetailsService {
     /**
      * refresh 토큰 생성
      */
-    public RefreshToken generateRefreshToken(String username) {
+    public String generateRefreshToken(String username) {
         RefreshToken refreshTokenObject = new RefreshToken(UUID.randomUUID().toString(), username);
         refreshTokenRepository.save(refreshTokenObject);
-        return refreshTokenObject;
+        return refreshTokenObject.getRefreshToken();
     }
 
     /**
      * refresh 토큰 삭제 후 재발급
      */
     @Transactional
-    public void deleteAndGenerateRefreshToken(String username) {
+    public String deleteAndGenerateRefreshToken(String username) {
         refreshTokenRepository.deleteById(username);
-        generateRefreshToken(username);
+        return generateRefreshToken(username);
     }
 }
