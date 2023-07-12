@@ -56,7 +56,6 @@ public class AuthController {
         String jwt = tokenProvider.createToken(authentication);
 
         RefreshToken refreshToken = customUserDetailsService.generateRefreshToken(loginDto.getUsername());
-        refreshTokenRepository.save(refreshToken);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);   // 헤더에 토큰을 넣는다.

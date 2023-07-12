@@ -118,20 +118,16 @@ public class TokenProvider implements InitializingBean {
             String expiredTokenUsername = e.getClaims().getSubject();
             Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findById(expiredTokenUsername);
 
-            // TODO 공격자가 refresh 토큰을 아무렇게나 넣어도 되는건가? -> refresh 토큰의 유효성 검증도 진행하자.
-            if (!optionalRefreshToken.isPresent()) {                                    // redis 에서 refresh token 을 찾을 수 없는 경우
+            if (!optionalRefreshToken.isPresent()) {                                            // redis 에서 refresh token 을 찾을 수 없는 경우
                 log.info("refresh token 만료되어 재발급");
                 customUserDetailsService.generateRefreshToken(expiredTokenUsername);
                 return createNewToken(expiredTokenUsername);
             }
 
-            RefreshToken storedRefreshToken = optionalRefreshToken.get();
-
-            if((storedRefreshToken.getRefreshToken()).equals(refreshToken)) {
-                // TODO ADMIN 권한에 접근 못하는게 우선인데, USER 가 여기 먼저 접근하는 경우는?
+            if((optionalRefreshToken.get().getRefreshToken()).equals(refreshToken)) {
+                log.info("RTS 전략 -> refresh token 사용했으므로 삭제 후 재발급");
+                customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername);
                 log.info("access token 만료되었지만, refresh token 일치하여 재발급");
-                log.info("RTS 전략으로 refresh token 사용했으므로 재발급");
-                customUserDetailsService.generateRefreshToken(expiredTokenUsername);
                 return createNewToken(expiredTokenUsername);
             } else {
                 throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);

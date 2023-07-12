@@ -2,6 +2,7 @@ package com.example.jwttest.service;
 
 import com.example.jwttest.entity.RefreshToken;
 import com.example.jwttest.entity.User;
+import com.example.jwttest.repository.RefreshTokenRepository;
 import com.example.jwttest.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,8 +21,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    private final RefreshTokenRepository refreshTokenRepository;
+    public CustomUserDetailsService(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
 
@@ -56,8 +59,18 @@ public class CustomUserDetailsService implements UserDetailsService {
     /**
      * refresh 토큰 생성
      */
-    @Transactional(readOnly = true)
     public RefreshToken generateRefreshToken(String username) {
-        return new RefreshToken(UUID.randomUUID().toString(), username);
+        RefreshToken refreshTokenObject = new RefreshToken(UUID.randomUUID().toString(), username);
+        refreshTokenRepository.save(refreshTokenObject);
+        return refreshTokenObject;
+    }
+
+    /**
+     * refresh 토큰 삭제 후 재발급
+     */
+    @Transactional
+    public void deleteAndGenerateRefreshToken(String username) {
+        refreshTokenRepository.deleteById(username);
+        generateRefreshToken(username);
     }
 }
