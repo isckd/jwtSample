@@ -2,7 +2,6 @@ package com.example.jwttest.controller;
 
 import com.example.jwttest.dto.LoginDto;
 import com.example.jwttest.dto.TokenDto;
-import com.example.jwttest.entity.RefreshToken;
 import com.example.jwttest.jwt.JwtFilter;
 import com.example.jwttest.jwt.TokenProvider;
 import com.example.jwttest.repository.RefreshTokenRepository;
@@ -14,7 +13,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +29,7 @@ public class AuthController {
     private final CustomUserDetailsService customUserDetailsService;
 
 
-    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, RefreshTokenRepository refreshTokenRepository, CustomUserDetailsService customUserDetailsService) {
+    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, CustomUserDetailsService customUserDetailsService) {
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.customUserDetailsService = customUserDetailsService;

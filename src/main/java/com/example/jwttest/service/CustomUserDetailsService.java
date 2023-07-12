@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Component("userDetailsService")
+@Component
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;

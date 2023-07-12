@@ -46,35 +46,6 @@ public class JwtFilter extends OncePerRequestFilter {
         } catch (CustomException e) {
             handleInvalidTokens(e, httpServletResponse);
         }
-
-//        String newAccessToken = "";
-//        String newRefreshToken = "";
-//        try {
-//            TokenDto newtokens = tokenProvider.validateToken(accessToken, refreshToken);         // validate 로 access, refresh token 만료 검증
-//            newAccessToken = newtokens.getToken();
-//            newRefreshToken = newtokens.getRefreshToken();
-//        } catch (CustomException e) {
-//            httpServletResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);                            // 403, 권한 없음
-//            httpServletResponse.setContentType("application/json");
-//            httpServletResponse.getWriter().write(String.format("{\"error\": \"%s\"}", e.getMessage()));
-//            log.error("잘못된 접근 발생! 로그 확인 요망");
-//            return;
-//        }
-
-//        if (StringUtils.hasText(newAccessToken)) {
-//            Authentication authentication = tokenProvider.getAuthentication(newAccessToken);           // 토큰 정보를 이용해 Authentication 객체를 생성한다.
-//            SecurityContextHolder.getContext().setAuthentication(authentication);           // SecurityContext 에 Authentication 객체를 저장한다.
-//            log.debug("Security Context 에 '{}' 인증 정보를 저장", authentication.getName());
-//        } else {
-//            log.debug("유효한 JWT 토큰이 없습니다");
-//        }
-//
-//        if (!newAccessToken.equals(accessToken)) {                                                     // access token 새로 발급 시
-//            httpServletResponse.addHeader(AUTHORIZATION_HEADER, "Bearer " + newAccessToken);     // response header 에 access token 추가
-//            httpServletResponse.addHeader(REFRESH_TOKEN_HEADER, newRefreshToken);           // access token 새로 발급 시 refresh token 도 새로 발급되므로 넣는다.
-//        }
-//
-//        filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
 
     /**
@@ -90,7 +61,6 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         return Optional.empty();
     }
-
 
     /**
      *  토큰이 유효하지 않을 때 처리하는 메서드

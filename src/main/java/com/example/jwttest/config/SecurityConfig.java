@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.filter.CorsFilter;
 
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)      // @PreAuthroize 어노테이션을 메소드 단위로 추가하기 위해 적용
+@EnableGlobalMethodSecurity(prePostEnabled = true)      // @PreAuthroize 어노테이션을 메서드 단위로 추가하기 위해 적용
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final TokenProvider tokenProvider;
