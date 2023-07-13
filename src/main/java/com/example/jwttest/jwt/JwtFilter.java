@@ -45,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             TokenDto newTokens = tokenProvider.validateToken(tokenDto.get().getToken(), tokenDto.get().getRefreshToken());
-            processValidTokens(newTokens, httpServletRequest, httpServletResponse, filterChain);
+            processValidTokens(tokenDto.get().getToken() , newTokens, httpServletRequest, httpServletResponse, filterChain);
         } catch (CustomException e) {
             handleInvalidTokens(e, httpServletResponse);
         }
@@ -79,14 +79,14 @@ public class JwtFilter extends OncePerRequestFilter {
     /**
      * 토큰이 유효할 때 SecurityContext 에 저장하는 메서드
      */
-    private void processValidTokens(TokenDto newTokens, HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    private void processValidTokens(String accessToken, TokenDto newTokens, HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         if (StringUtils.hasText(newTokens.getToken())) {
             Authentication authentication = tokenProvider.getAuthentication(newTokens.getToken());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("Save '{}' authentication information in Security Context", authentication.getName());
+            log.debug(authentication.getName() + " 의 접근 허용. Security Context 에 저장 완료");
 
-            if (!newTokens.getToken().equals(newTokens.getToken())) {
+            if (!newTokens.getToken().equals(accessToken)) {
                 response.addHeader(AUTHORIZATION_HEADER, "Bearer " + newTokens.getToken());
                 response.addHeader(REFRESH_TOKEN_HEADER, newTokens.getRefreshToken());
             }
