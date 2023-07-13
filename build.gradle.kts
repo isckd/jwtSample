@@ -2,6 +2,12 @@ plugins {
 	java
 	id("org.springframework.boot") version "2.6.5"
 	id("io.spring.dependency-management") version "1.0.15.RELEASE"
+
+	// kotlin
+	kotlin("jvm") version "1.6.10"
+	kotlin("plugin.spring") version "1.6.10"
+	kotlin("plugin.jpa") version "1.6.10"
+	kotlin("kapt") version "1.6.10"
 }
 
 group = "com.example"
@@ -50,8 +56,21 @@ dependencies {
 
 	// redis
 	implementation ("org.springframework.boot:spring-boot-starter-data-redis")
+
+	// kotlin
+	implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
+	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10")
+
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+// kotlin 컴파일러
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+	kotlinOptions {
+		freeCompilerArgs = listOf("-Xjsr305=strict")
+		jvmTarget = "1.8"
+	}
 }

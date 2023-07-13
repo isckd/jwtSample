@@ -9,7 +9,8 @@ import com.example.jwttest.service.CustomUserDetailsService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.log4j.Log4j2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,8 +31,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@Log4j2
 public class TokenProvider implements InitializingBean {
+
+    private static final Logger log = LoggerFactory.getLogger(TokenProvider.class);
 
     private static final String AUTHORITIES_KEY = "auth";       // 토큰에 담길 권한 정보의 키
 

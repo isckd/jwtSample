@@ -1,15 +1,16 @@
 package com.example.jwttest.util;
 
-import lombok.extern.log4j.Log4j2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;
 
-@Log4j2
 public class SecurityUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityUtil.class);
 
     /**
      * SecurityContext 의 Authentication 객체를 이용해 username 을 리턴하는 메소드 <br>

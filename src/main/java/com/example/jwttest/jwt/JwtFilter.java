@@ -2,7 +2,8 @@ package com.example.jwttest.jwt;
 
 import com.example.jwttest.dto.TokenDto;
 import com.example.jwttest.exception.CustomException;
-import lombok.extern.log4j.Log4j2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -15,8 +16,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@Log4j2
+
 public class JwtFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);
 
     public static final String AUTHORIZATION_HEADER = "Authorization";      // 헤더의 키 값
     public static final String REFRESH_TOKEN_HEADER = "refreshToken";      // refresh token 키 값
