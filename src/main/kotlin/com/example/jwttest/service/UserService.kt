@@ -25,17 +25,16 @@ class UserService(private val userRepository: UserRepository, private val passwo
         if (userRepository.findOneWithAuthoritiesByUsername(userDto?.username!!).orElse(null) != null) {
             throw CustomException(ErrorCode.DUPLICATE_USER)
         }
-        val authority: Authority = Authority.Companion.builder()
-            .authorityName("ROLE_USER") // 회원가입을 통한 유저는 권한이 USER
-            .build()
-        val user: User = User.Companion.builder()
-            .username(userDto.username)
-            .password(passwordEncoder.encode(userDto.password))
-            .nickname(userDto.nickname)
-            .authorities(setOf(authority))
-            .activated(true)
-            .build()
-        return UserDto.Companion.from(userRepository.save(user))
+        val authority = Authority(authorityName = "ROLE_USER")
+        val user = User(
+            username = userDto.username,
+            password = passwordEncoder.encode(userDto.password),
+            nickname = userDto.nickname,
+            authorities = setOf(authority),
+            isActivated = true
+        )
+
+        return from(userRepository.save(user))
     }
 
     /**
