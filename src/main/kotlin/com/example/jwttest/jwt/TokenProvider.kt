@@ -58,11 +58,11 @@ class TokenProvider(
         val now = Date().time
         val validity = Date(now + tokenValidityInMilliseconds)
         return Jwts.builder()
-            .setSubject(authentication.name) // 사용자 이름
-            .claim(AUTHORITIES_KEY, authorities) // authorities : "ROLE_USER" or "ROLE_ADMIN"
-            .signWith(key, SignatureAlgorithm.HS512) // HMAC SHA512 알고리즘을 사용해서 sign
-            .setExpiration(validity) // 토큰의 만료시간 설정
-            .compact() // 직렬화
+            .setSubject(authentication.name)            // 사용자 이름
+            .claim(AUTHORITIES_KEY, authorities)        // authorities : (ROLE_USER", ROLE_ADMIN) or (ROLE_USER)
+            .signWith(key, SignatureAlgorithm.HS512)    // HMAC SHA512 알고리즘을 사용해서 sign
+            .setExpiration(validity)                    // 토큰의 만료시간 설정
+            .compact()                                  // 직렬화
     }
 
     /**
@@ -102,14 +102,13 @@ class TokenProvider(
             log.info(e.message + " 만료된 access 토큰")
             val expiredTokenUsername = e.claims.subject
             val optionalRefreshToken = refreshTokenRepository.findById(expiredTokenUsername)
-            if (!optionalRefreshToken.isPresent) {                                        // redis 에서 refresh token 을 찾을 수 없는 경우
+            if (!optionalRefreshToken.isPresent) {                                         // redis 에서 refresh token 을 찾을 수 없는 경우
                 log.info("access token, refresh token 모두 만료되어 접근 제한")
                 throw CustomException(ErrorCode.EXPIRED_ACCESS_REFRESH_TOKEN)
             }
-            if (optionalRefreshToken.get().refreshToken == refreshToken) {       // redis 에서 refresh token 을 찾고 주어진 토큰과 일치하는 경우
-                log.info("RTS 전략 -> refresh token 사용했으므로 삭제 후 재발급")
-                refreshToken = customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername)
-                log.info("access token 만료되었지만, refresh token 일치하여 재발급")
+            if (optionalRefreshToken.get().refreshToken == refreshToken) {                  // redis 에서 refresh token 을 찾고 주어진 토큰과 일치하는 경우
+                log.info("access token 만료되었지만, refresh token 일치하여 재발급. 인증 정보 : '{}'", expiredTokenUsername)
+                refreshToken = customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername)         // RTS 전략 -> refresh token 사용 시 재발급
                 TokenDto(createNewToken(expiredTokenUsername), refreshToken)
             } else {                                                                        // redis 에서 username 에 대한 refresh token 을 찾았지만 주어진 토큰과 일치하지 않는 경우
                 throw CustomException(ErrorCode.REFRESH_TOKEN_ERROR)
@@ -126,17 +125,17 @@ class TokenProvider(
     }
 
     /**
-     * access token 만료, refresh token 일치시 access token 재발급하여 SecurityContext 에 저장
+     * access token 만료, refresh token 일치 시
+     *  -> access token 재발급하고, SecurityContext 에 저장
      */
     private fun createNewToken(expiredTokenUsername: String): String {
         val userDetails = userDetailsService.loadUserByUsername(expiredTokenUsername)
         val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
-        SecurityContextHolder.getContext().authentication = authentication
         return createToken(authentication)
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(TokenProvider::class.java)
-        private const val AUTHORITIES_KEY = "auth" // 토큰에 담길 권한 정보의 키
+        private const val AUTHORITIES_KEY = "auth"                          // 토큰에 담길 권한 정보의 Key (value : ROLE_USER, ROLE_ADMIN)
     }
 }

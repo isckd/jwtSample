@@ -8,7 +8,6 @@ import com.example.jwttest.repository.UserRepository
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -19,15 +18,16 @@ class CustomUserDetailsService(
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository
 ) : UserDetailsService {
+
     /**
      * DB 에서 유저 정보를 가져온다.
      */
     @Transactional
-    @Throws(UsernameNotFoundException::class)
+    @Throws(IllegalArgumentException::class)
     override fun loadUserByUsername(username: String): UserDetails {
         return userRepository.findOneWithAuthoritiesByUsername(username)
             .map { user: User? -> createUser(username, user) }
-            .orElseThrow { UsernameNotFoundException("$username -> DB 에서 찾을 수 없습니다.") }
+            .orElseThrow { IllegalArgumentException("$username -> DB 에서 찾을 수 없습니다.") }
     }
 
     /**
@@ -38,7 +38,7 @@ class CustomUserDetailsService(
             throw RuntimeException("$username -> 활성화되어 있지 않습니다.")
         }
         val grantedAuthorities = user.authorities?.stream()
-            ?.map { authority: Authority? -> SimpleGrantedAuthority(authority?.authorityName) }
+            ?.map { authority: Authority? -> SimpleGrantedAuthority(authority?.authorityName) }     // Role(권한)을 지정한다.
             ?.collect(Collectors.toList())
         return org.springframework.security.core.userdetails.User(
             user.username,

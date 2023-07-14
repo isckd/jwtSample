@@ -13,10 +13,12 @@ import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+/**
+ * 토큰의 인증정보를 SecurityContext 에 보내는 역할
+ * OncePerRequestFilter : 모든 요청에 대해 단 한번만 필터링을 수행한다. (기본 서블릿 필터는 DispatcherServlet 을 들어가고 나올 때마다 수행된다.)
+ */
 class JwtFilter(private val tokenProvider: TokenProvider) : OncePerRequestFilter() {
-    /**
-     * 토큰의 인증정보를 SecurityContext 에 보내는 역할
-     */
+
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         httpServletRequest: HttpServletRequest,
@@ -24,7 +26,7 @@ class JwtFilter(private val tokenProvider: TokenProvider) : OncePerRequestFilter
         filterChain: FilterChain
     ) {
         log.debug("URI : " + httpServletRequest.requestURI)
-        val tokenDto = resolveToken(httpServletRequest) // 토큰 정보를 꺼내온다.
+        val tokenDto = resolveToken(httpServletRequest)                   // 토큰 정보를 꺼내온다.
         if (!tokenDto.isPresent) {
             filterChain.doFilter(httpServletRequest, httpServletResponse) // 토큰이 없으면 토큰 검증을 실시하지 않는다.
             return
@@ -41,11 +43,11 @@ class JwtFilter(private val tokenProvider: TokenProvider) : OncePerRequestFilter
      * Request Header 에서 토큰 정보를 꺼내오기 위한 메서드
      */
     private fun resolveToken(request: HttpServletRequest): Optional<TokenDto> {
-        var accessToken = request.getHeader(AUTHORIZATION_HEADER) // 헤더에서 토큰 정보를 꺼내온다.
+        var accessToken = request.getHeader(AUTHORIZATION_HEADER)                                     // 헤더에서 토큰 정보를 꺼내온다.
         val refreshToken = request.getHeader(REFRESH_TOKEN_HEADER)
         if (StringUtils.hasText(accessToken) && accessToken.startsWith("Bearer ")) {            // 토큰 정보가 존재하고, Bearer로 시작하는 경우
             accessToken = accessToken.split(" ".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()[1].trim { it <= ' ' } // Bearer 다음 문자열을 반환한다.
+                .toTypedArray()[1].trim { it <= ' ' }                                                 // Bearer 다음 문자열을 반환한다.
             return Optional.of(TokenDto(accessToken, refreshToken))
         }
         return Optional.empty()
@@ -75,13 +77,14 @@ class JwtFilter(private val tokenProvider: TokenProvider) : OncePerRequestFilter
         if (StringUtils.hasText(newTokens?.token)) {
             val authentication = tokenProvider.getAuthentication(newTokens?.token)
             SecurityContextHolder.getContext().authentication = authentication
-            log.debug(authentication.name + " 의 접근 허용. Security Context 에 저장 완료")
-            if (newTokens?.token != accessToken) {
+            log.debug(authentication.name + " 의 접근 허용")
+            if (newTokens?.token != accessToken) {                                              // accessToken 이 만료되어서 재발급된 경우
+                log.debug("new Access token 발급해 Security Context 에 '{}' 인증 정보를 저장. 인증 정보 : {}", authentication.name, authentication.authorities)
                 response.addHeader(AUTHORIZATION_HEADER, "Bearer " + newTokens?.token)
                 response.addHeader(REFRESH_TOKEN_HEADER, newTokens?.refreshToken)
             }
         } else {
-            log.debug("No valid JWT token")
+            log.debug("유효한 토큰이 없습니다. Security Context 에 저장하지 않음")
         }
         chain.doFilter(request, response)
     }

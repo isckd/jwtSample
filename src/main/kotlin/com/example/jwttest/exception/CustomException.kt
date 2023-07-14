@@ -1,5 +1,5 @@
 package com.example.jwttest.exception
 
-class CustomException(val errorCode: ErrorCode) : RuntimeException(
+class CustomException(errorCode: ErrorCode) : RuntimeException(
     errorCode.message
 )

@@ -47,15 +47,15 @@ class UserService(private val userRepository: UserRepository, private val passwo
                 .orElse(null)
         )
     }
+
+    /**
+     * 유저정보 조회 (ROLE_ADMIN)
+     */
     @get:Transactional(readOnly = true)
     val myUserWithAuthorities: UserDto
-        /**
-         * 유저정보 조회 (ROLE_ADMIN)
-         */
         get() = from(
-            SecurityUtil.currentUsername // SecurityContext 에서 username 을 가져온다.
-                .flatMap { username: String? -> username?.let { userRepository.findOneWithAuthoritiesByUsername(it) } } // username 을 기준으로 User 정보를 가져온다.
-
+            SecurityUtil.currentUsername                                                                                // SecurityContext 에서 username 을 가져온다.
+                .flatMap { username: String -> userRepository.findOneWithAuthoritiesByUsername(username)  }            // username 을 기준으로 User 정보를 가져온다.
                 .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
         )
 }
