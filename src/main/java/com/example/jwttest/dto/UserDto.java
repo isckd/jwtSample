@@ -3,6 +3,7 @@ package com.example.jwttest.dto;
 
 import com.example.jwttest.entity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -42,7 +43,7 @@ public class UserDto {
 
 
     /**
-     * UserDto 를 User 엔티티로 변환
+     * User 엔티티를 UserDto 로 변환
      */
     public static UserDto from(User user) {
         if(user == null) return null;

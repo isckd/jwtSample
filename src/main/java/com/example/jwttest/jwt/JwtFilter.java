@@ -17,6 +17,11 @@ import java.io.IOException;
 import java.util.Optional;
 
 
+
+/**
+ * 토큰의 인증정보를 SecurityContext 에 보내는 역할
+ * OncePerRequestFilter : 모든 요청에 대해 단 한번만 필터링을 수행한다. (기본 서블릿 필터는 DispatcherServlet 을 들어가고 나올 때마다 수행된다.)
+ */
 public class JwtFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtFilter.class);

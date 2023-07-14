@@ -33,10 +33,10 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws IllegalArgumentException {
         return userRepository.findOneWithAuthoritiesByUsername(username)
                 .map(user -> createUser(username, user))
-                .orElseThrow(() -> new UsernameNotFoundException(username + " -> DB 에서 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(username + " -> DB 에서 찾을 수 없습니다."));
     }
 
     /**
