@@ -1,5 +1,6 @@
 package com.example.jwttest.jwt;
 
+import com.example.jwttest.exception.CustomException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
@@ -23,9 +24,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException{
-        log.debug("Exception : {}", authException.getMessage());
 
-        // 유효한 자격증명을 제공하지 않고 접근하려 할때 401
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write(String.format("{\"error\": \"%s\"}", authException.getMessage()));
+        log.error("잘못된 접근 발생! 로그 확인 요망");
     }
 }

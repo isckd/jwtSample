@@ -1,6 +1,8 @@
 package com.example.jwttest.exception;
 
-public class CustomException extends RuntimeException {
+import org.springframework.security.core.AuthenticationException;
+
+public class CustomException extends AuthenticationException {
     private ErrorCode errorCode;
 
     public CustomException(ErrorCode errorCode) {

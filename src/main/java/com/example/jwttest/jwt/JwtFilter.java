@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,9 +31,11 @@ public class JwtFilter extends OncePerRequestFilter {
     public static final String REFRESH_TOKEN_HEADER = "refreshToken";      // refresh token 키 값
 
     private TokenProvider tokenProvider;
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    public JwtFilter(TokenProvider tokenProvider) {
+    public JwtFilter(TokenProvider tokenProvider, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.tokenProvider = tokenProvider;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
 
     /**
@@ -52,7 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
             TokenDto newTokens = tokenProvider.validateToken(tokenDto.get().getToken(), tokenDto.get().getRefreshToken());
             processValidTokens(tokenDto.get().getToken() , newTokens, httpServletRequest, httpServletResponse, filterChain);
         } catch (CustomException e) {
-            handleInvalidTokens(e, httpServletResponse);
+            jwtAuthenticationEntryPoint.commence(httpServletRequest, httpServletResponse, e);
         }
     }
 
@@ -68,17 +71,6 @@ public class JwtFilter extends OncePerRequestFilter {
             return Optional.of(new TokenDto(accessToken, refreshToken));
         }
         return Optional.empty();
-    }
-
-    /**
-     *  토큰이 유효하지 않을 때 처리하는 메서드
-     */
-    private void handleInvalidTokens(CustomException e, HttpServletResponse response)
-            throws IOException {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setContentType("application/json");
-        response.getWriter().write(String.format("{\"error\": \"%s\"}", e.getMessage()));
-        log.error("잘못된 접근 발생! 로그 확인 요망");
     }
 
     /**
