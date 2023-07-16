@@ -54,7 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()                                       // token 방식이라 csrf 설정 disable
+                .csrf().disable()                                       // 토큰을 쿠키로 보내지 않으므로 disable
 
                 .addFilterBefore(corsConfig.corsFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtFilter(tokenProvider, jwtAuthenticationEntryPoint), UsernamePasswordAuthenticationFilter.class)
@@ -63,7 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)  // 인증 실패시 처리
                 .accessDeniedHandler(jwtAccessDeniedHandler)            // 인가실패시 처리
 
-                .and()                                                  // h2-console 을 위한 설정
+                .and()                                                  // h2-console 을 위한 설정 (운영 시에는 빼야됨!)
                 .headers()
                 .frameOptions()
                 .sameOrigin()
@@ -80,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/user").hasRole("USER")
                 .antMatchers("/api/user/{username}").hasRole("ADMIN")
 
-                .antMatchers("/swagger-ui/**").permitAll()             // swagger-ui 허용
+                .antMatchers("/swagger-ui/**").permitAll()             // swagger-ui 허용 (운영 시에는 빼야됨!)
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/v3/**").permitAll()
 
