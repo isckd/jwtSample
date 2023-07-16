@@ -42,7 +42,7 @@ class SecurityConfig(
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
         http
-            .csrf().disable()                                                       // token 방식이라 csrf 설정 disable
+            .csrf().disable()                                                       // 토큰을 쿠키로 보내지 않으므로 disable
 
             .addFilterBefore(corsConfig.corsFilter(), UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(JwtFilter(tokenProvider, jwtAuthenticationEntryPoint), UsernamePasswordAuthenticationFilter::class.java)
@@ -51,7 +51,7 @@ class SecurityConfig(
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
-            .and()                                                                  // h2-console 을 위한 설정
+            .and()                                                                  // h2-console 을 위한 설정 (운영 시에는 빼야됨!)
                 .headers()
                 .frameOptions()
                 .sameOrigin()
@@ -68,9 +68,9 @@ class SecurityConfig(
                 .antMatchers("/api/authenticate").permitAll()
                 .antMatchers("/api/signup").permitAll()
 
-                .antMatchers("/swagger-ui/**").permitAll()                        // swagger-ui 허용
+                .antMatchers("/swagger-ui/**").permitAll()                        // swagger-ui 허용 (운영 시에는 빼야됨!)
                 .antMatchers("/swagger-resources/**").permitAll()
-                .antMatchers("/v3/**").permitAll()
+//                .antMatchers("/v3/**").permitAll()
                 .anyRequest().authenticated()
     }
 }

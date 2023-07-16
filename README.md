@@ -51,7 +51,10 @@
 
 
 - 테스트코드 추가해야 함.
-  
+- https://techblog.woowahan.com/9232/ Actuator 관련 설정 추가해야 함.
+- API GATEWAY 로서 동작할것인가
+- https ssl 인증서는 구현할것인가
+- 특정 origin 만 허용할 것인가  
 문제 제기 : 과연 Redis 가 맞는것인가?
 - 회원이 1000만 명이라면? 1000만 개의 refresh token 을 저장해야 하는가?
 
