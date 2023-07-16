@@ -25,15 +25,15 @@ data class UserDto(
 ) {
 
     /**
-     * UserDto 를 User 엔티티로 변환하는 메서드
+     * User 를 UserDto 로 변환하는 메서드
      */
     companion object {
         fun from(user: User): UserDto {
-            return user.run {                               // user.run 은 run {} 안의 내용을 user 에 적용하고 user 를 반환한다.
+            return user.run {                                   // {} 내부의 context 를 user 로 지정한다. this 로 호출 가능하다.
                 UserDto(
                     username = this.username,
-                    nickname = nickname,
-                    authorityDtoSet = user.authorities!!
+                    nickname = this.nickname,
+                    authorityDtoSet = this.authorities!!
                         .map { authority ->                             // .map 은 list 의 각 요소에 대해 {} 안의 내용을 적용하고 적용된 요소들을 list 로 반환한다.
                             AuthorityDto(authority.authorityName)
                         }

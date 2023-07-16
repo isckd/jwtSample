@@ -11,7 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 class RestResponseExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseStatus(HttpStatus.FORBIDDEN) // 403, 권한 없음
-    @ExceptionHandler(value = [AccessDeniedException::class, CustomException::class])
+    @ExceptionHandler(value = [CustomException::class])
     @ResponseBody
     protected fun forbidden(ex: RuntimeException, request: WebRequest?): ErrorDto {
         return ErrorDto(HttpStatus.FORBIDDEN.value(), ex.message)

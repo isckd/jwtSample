@@ -70,7 +70,7 @@ class JwtFilter(
         if (StringUtils.hasText(newTokens?.token)) {
             val authentication = tokenProvider.getAuthentication(newTokens?.token)
             SecurityContextHolder.getContext().authentication = authentication
-            log.debug(authentication.name + " 의 접근 허용")
+            log.debug(authentication.name + " 의 인가 허용")
             if (newTokens?.token != accessToken) {                                              // accessToken 이 만료되어서 재발급된 경우
                 log.debug("new Access token 발급해 Security Context 에 '{}' 인증 정보를 저장. 인증 정보 : {}", authentication.name, authentication.authorities)
                 response.addHeader(AUTHORIZATION_HEADER, "Bearer " + newTokens?.token)

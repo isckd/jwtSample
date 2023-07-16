@@ -42,7 +42,7 @@
 ## flow (핵심 로직만)
 로그인(/authenticate) 시 access token, refresh token 둘 다 발급 (refresh token 은 redis 에 저장)
 - access token 만료 시간 5초, refresh token 만료 시간 10초 (테스트용이므로 짧게)
-- access token HS256 알고리즘으로 검증 
+- access token HS512 알고리즘으로 검증 
   - 인증 실패 시 401 에러
   - 인증 성공 시 200
   - 만료된 access token 시 refresh token 검증
@@ -56,4 +56,4 @@
 - 회원이 1000만 명이라면? 1000만 개의 refresh token 을 저장해야 하는가?
 
 추가 개발하면 좋을 것 같은 것들
-- HS256 말고 RSA 암호화 알고리즘 사용? -> 다만 웹/앱 단에서도 공개키를 사용할 수 있어야 함. (과연 실무 협의가 될지..)
+- HS512 말고 RSA 암호화 알고리즘 사용? -> 다만 웹/앱 단에서도 공개키를 사용할 수 있어야 함. (과연 실무 협의가 될지..)

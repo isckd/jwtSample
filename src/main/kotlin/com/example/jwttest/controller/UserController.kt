@@ -33,9 +33,11 @@ class UserController(private val userService: UserService) {
 
     /**
      * 내 정보 조회
+     * @PreAuthoize 어노테이션은 Controller 단에서 적용되어 AccessDeniedHandler 를 상속한 클래스에서 잡지 못한다.
+     * 따라서, AccessDeniedException 을 커스텀하게 처리하기 위해선 SecurityConfig 에서 .hasRole() 속성으로 적용해야 한다.
      */
     @GetMapping("/user")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // USER, ADMIN 권한 접근 가능
+//    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     fun getMyUserInfo(request: HttpServletRequest?): ResponseEntity<UserDto> {
         return ResponseEntity.ok(userService.myUserWithAuthorities)
     }
@@ -44,7 +46,7 @@ class UserController(private val userService: UserService) {
      * 다른 유저 정보 조회 (ADMIN 권한 필요)
      */
     @GetMapping("/user/{username}")
-    @PreAuthorize("hasAnyRole('ADMIN')") // ADMIN 권한만 접근 가능
+//    @PreAuthorize("hasAnyRole('ADMIN')")
     fun getUserInfo(@PathVariable username: String?): ResponseEntity<UserDto> {
         return ResponseEntity.ok(username?.let { userService.getUserWithAuthorities(it) })
     }
