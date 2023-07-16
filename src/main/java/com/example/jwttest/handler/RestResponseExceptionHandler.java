@@ -16,7 +16,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ResponseStatus(FORBIDDEN)              // 403, 권한 없음
-    @ExceptionHandler(value = { AccessDeniedException.class, CustomException.class })
+    @ExceptionHandler(value = { CustomException.class })
     @ResponseBody
     protected ErrorDto forbidden(RuntimeException ex, WebRequest request) {
         return new ErrorDto(FORBIDDEN.value(), ex.getMessage());

@@ -81,7 +81,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(newTokens.getToken())) {
             Authentication authentication = tokenProvider.getAuthentication(newTokens.getToken());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug(authentication.getName() + " 의 접근 허용. Security Context 에 저장 완료");
+            log.debug(authentication.getName() + " 의 인가 허용. Security Context 에 저장 완료");
 
             if (!newTokens.getToken().equals(accessToken)) {
                 response.addHeader(AUTHORIZATION_HEADER, "Bearer " + newTokens.getToken());

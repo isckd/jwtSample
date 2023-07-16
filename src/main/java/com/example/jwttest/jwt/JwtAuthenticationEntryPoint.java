@@ -28,6 +28,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.getWriter().write(String.format("{\"error\": \"%s\"}", authException.getMessage()));
-        log.error("잘못된 접근 발생! 로그 확인 요망");
+        log.error("잘못된 접근 발생!");
     }
 }

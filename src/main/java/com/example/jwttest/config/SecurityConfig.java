@@ -1,6 +1,6 @@
 package com.example.jwttest.config;
 
-import com.example.jwttest.handler.JwtAccessDeniedHandler;
+import com.example.jwttest.jwt.JwtAccessDeniedHandler;
 import com.example.jwttest.jwt.JwtAuthenticationEntryPoint;
 import com.example.jwttest.jwt.JwtFilter;
 import com.example.jwttest.jwt.TokenProvider;
@@ -77,6 +77,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/hello").permitAll()
                 .antMatchers("/api/authenticate").permitAll()          // 로그인, 회원가입 API 는 누구나 접근 가능
                 .antMatchers("/api/signup").permitAll()
+                .antMatchers("/api/user").hasRole("USER")
+                .antMatchers("/api/user/{username}").hasRole("ADMIN")
 
                 .antMatchers("/swagger-ui/**").permitAll()             // swagger-ui 허용
                 .antMatchers("/swagger-resources/**").permitAll()
