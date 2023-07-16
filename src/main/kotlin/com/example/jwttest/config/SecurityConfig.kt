@@ -2,7 +2,7 @@ package com.example.jwttest.config
 
 import com.example.jwttest.handler.JwtAccessDeniedHandler
 import com.example.jwttest.jwt.JwtAuthenticationEntryPoint
-import com.example.jwttest.jwt.JwtSecurityConfig
+import com.example.jwttest.jwt.JwtFilter
 import com.example.jwttest.jwt.TokenProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
@@ -14,14 +14,13 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.web.filter.CorsFilter
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true) // @PreAuthroize 어노테이션을 메서드 단위로 추가하기 위해 적용
 
 class SecurityConfig(
     private val tokenProvider: TokenProvider,
-    private val corsFilter: CorsFilter,
+    private val corsConfig: CorsConfig,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtAccessDeniedHandler: JwtAccessDeniedHandler
 ) : WebSecurityConfigurerAdapter() {
@@ -43,7 +42,8 @@ class SecurityConfig(
     override fun configure(http: HttpSecurity) {
         http
             .csrf().disable() // token 방식이라 csrf 설정 disable
-            .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(corsConfig.corsFilter(), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(JwtFilter(tokenProvider, jwtAuthenticationEntryPoint), UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling() // Exception 설정 커스텀한것들로 변경
             .authenticationEntryPoint(jwtAuthenticationEntryPoint)
             .accessDeniedHandler(jwtAccessDeniedHandler)
@@ -63,7 +63,5 @@ class SecurityConfig(
             .antMatchers("/swagger-resources/**").permitAll()
             .antMatchers("/v3/**").permitAll()
             .anyRequest().authenticated()
-            .and()
-            .apply(JwtSecurityConfig(tokenProvider)) // JwtFilter 를 addFilterBefore 로 등록했던 JwtSecurityConfig 클래스를 적용
     }
 }

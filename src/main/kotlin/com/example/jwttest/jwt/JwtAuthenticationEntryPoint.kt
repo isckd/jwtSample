@@ -20,10 +20,10 @@ class JwtAuthenticationEntryPoint : AuthenticationEntryPoint {
         response: HttpServletResponse,
         authException: AuthenticationException
     ) {
-        log.debug("Exception : {}", authException.message)
-
-        // 유효한 자격증명을 제공하지 않고 접근하려 할때 401
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+        response.status = HttpServletResponse.SC_UNAUTHORIZED;
+        response.contentType = "application/json";
+        response.writer.write(String.format("{\"error\": \"%s\"}", authException.message));
+        log.error("잘못된 접근 발생! 로그 확인 요망");
     }
 
     companion object {

@@ -17,7 +17,10 @@ import javax.servlet.http.HttpServletResponse
  * 토큰의 인증정보를 SecurityContext 에 보내는 역할
  * OncePerRequestFilter : 모든 요청에 대해 단 한번만 필터링을 수행한다. (기본 서블릿 필터는 DispatcherServlet 을 들어가고 나올 때마다 수행된다.)
  */
-class JwtFilter(private val tokenProvider: TokenProvider) : OncePerRequestFilter() {
+class JwtFilter(
+        private val tokenProvider: TokenProvider,
+        private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
+) : OncePerRequestFilter() {
 
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
@@ -35,7 +38,7 @@ class JwtFilter(private val tokenProvider: TokenProvider) : OncePerRequestFilter
             val newTokens = tokenProvider.validateToken(tokenDto.get().token, tokenDto.get().refreshToken)
             processValidTokens(tokenDto.get().token, newTokens, httpServletRequest, httpServletResponse, filterChain)
         } catch (e: CustomException) {
-            handleInvalidTokens(e, httpServletResponse)
+            jwtAuthenticationEntryPoint.commence(httpServletRequest, httpServletResponse, e)
         }
     }
 
@@ -51,16 +54,6 @@ class JwtFilter(private val tokenProvider: TokenProvider) : OncePerRequestFilter
             return Optional.of(TokenDto(accessToken, refreshToken))
         }
         return Optional.empty()
-    }
-
-    /**
-     * 토큰이 유효하지 않을 때 처리하는 메서드
-     */
-    @Throws(IOException::class)
-    private fun handleInvalidTokens(e: CustomException, response: HttpServletResponse) {
-        response.status = HttpServletResponse.SC_FORBIDDEN
-        response.contentType = "application/json"
-        response.writer.write(String.format("{\"error\": \"%s\"}", e.message))
     }
 
     /**
