@@ -38,7 +38,7 @@ class UserService(private val userRepository: UserRepository, private val passwo
     }
 
     /**
-     * 유저정보 조회
+     * 내 정보 조회 (ROLE_USER)
      */
     @get:Transactional(readOnly = true)
     val myUserWithAuthorities: UserDto
@@ -47,4 +47,17 @@ class UserService(private val userRepository: UserRepository, private val passwo
                 .flatMap { username: String -> userRepository.findOneWithAuthoritiesByUsername(username)  }            // username 을 기준으로 User 정보를 가져온다.
                 .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
         )
+
+    /**
+    * 유저 정보 조회 (ROLE_ADMIN)
+    */
+    @Transactional(readOnly = true)
+    fun getUserWithAuthorities(username: String): UserDto {
+        return from(
+            userRepository.findOneWithAuthoritiesByUsername(username)
+                .orElse(null)
+        )
+    }
+
+
 }

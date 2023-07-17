@@ -48,6 +48,6 @@ class UserController(private val userService: UserService) {
     @GetMapping("/user/{username}")
 //    @PreAuthorize("hasAnyRole('ADMIN')")
     fun getUserInfo(@PathVariable username: String?): ResponseEntity<UserDto> {
-        return ResponseEntity.ok(userService.myUserWithAuthorities)
+        return ResponseEntity.ok(username?.let { userService.getUserWithAuthorities(it) })
     }
 }
