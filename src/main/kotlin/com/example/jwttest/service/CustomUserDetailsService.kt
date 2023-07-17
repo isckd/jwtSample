@@ -37,13 +37,13 @@ class CustomUserDetailsService(
         if (!user!!.isActivated) {
             throw RuntimeException("$username -> 활성화되어 있지 않습니다.")
         }
-        val grantedAuthorities = user.authorities?.stream()
-            ?.map { authority: Authority? -> SimpleGrantedAuthority(authority?.authorityName) }     // Role(권한)을 지정한다.
+        val grantedAuthorities = user.authorities?.stream()                                         // user 엔티티의 권한을 가져온다.
+            ?.map { authority: Authority? -> SimpleGrantedAuthority(authority?.authorityName) }     // SimpleGrantedAuthority 객체로 반환
             ?.collect(Collectors.toList())
         return org.springframework.security.core.userdetails.User(
             user.username,
             user.password,
-            grantedAuthorities
+            grantedAuthorities                                                                      // UserDetails 객체에 권한을 넣어준다.
         )
     }
 

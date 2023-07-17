@@ -38,18 +38,7 @@ class UserService(private val userRepository: UserRepository, private val passwo
     }
 
     /**
-     * 내 정보 조회 (ROLE_USER)
-     */
-    @Transactional(readOnly = true)
-    fun getUserWithAuthorities(username: String): UserDto {
-        return from(
-            userRepository.findOneWithAuthoritiesByUsername(username)
-                .orElse(null)
-        )
-    }
-
-    /**
-     * 유저정보 조회 (ROLE_ADMIN)
+     * 유저정보 조회
      */
     @get:Transactional(readOnly = true)
     val myUserWithAuthorities: UserDto

@@ -32,7 +32,7 @@ class AuthController(
          * 인증이 성공하면 SecurityContextHolder 에 User 정보를 저장한다.
          */
         val authenticationToken = UsernamePasswordAuthenticationToken(loginDto?.username, loginDto?.password)
-        val authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken)
+        val authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken)         // 유저 정보를 사용해서 Authentication 객체를 만든다.
         SecurityContextHolder.getContext().authentication = authentication
 
         val jwt = tokenProvider.createToken(authentication)

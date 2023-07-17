@@ -108,7 +108,7 @@ class TokenProvider(
             }
             if (optionalRefreshToken.get().refreshToken == refreshToken) {                  // redis 에서 refresh token 을 찾고 주어진 토큰과 일치하는 경우
                 log.info("access token 만료되었지만, refresh token 일치하여 재발급. 인증 정보 : '{}'", expiredTokenUsername)
-                refreshToken = customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername)         // RTS 전략 -> refresh token 사용 시 재발급
+                refreshToken = customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername)         // RTR 전략 -> refresh token 사용 시 재발급
                 TokenDto(createNewToken(expiredTokenUsername), refreshToken)
             } else {                                                                        // redis 에서 username 에 대한 refresh token 을 찾았지만 주어진 토큰과 일치하지 않는 경우
                 throw CustomException(ErrorCode.REFRESH_TOKEN_ERROR)
