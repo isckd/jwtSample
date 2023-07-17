@@ -57,6 +57,18 @@ public class UserService {
      * 내 정보 조회 (ROLE_USER)
      */
     @Transactional(readOnly = true)
+    public UserDto getMyUserWithAuthorities() {
+        return UserDto.from(
+                SecurityUtil.getCurrentUsername()                                       // SecurityContext 에서 username 을 가져온다.
+                        .flatMap(userRepository::findOneWithAuthoritiesByUsername)      // username 을 기준으로 User 정보를 가져온다.
+                        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND))
+        );
+    }
+
+    /**
+     * 유저 정보 조회 (ROLE_ADMIN)
+     */
+    @Transactional(readOnly = true)
     public UserDto getUserWithAuthorities(String username) {
 //        return UserDto.from(userRepository.findOneWithAuthoritiesByUsername(username).orElse(null));
         return UserDto.from(
@@ -65,17 +77,7 @@ public class UserService {
         );
     }
 
-    /**
-     * 유저정보 조회 (ROLE_ADMIN)
-     */
-    @Transactional(readOnly = true)
-    public UserDto getMyUserWithAuthorities() {
-        return UserDto.from(
-                SecurityUtil.getCurrentUsername()                                       // SecurityContext 에서 username 을 가져온다.
-                        .flatMap(userRepository::findOneWithAuthoritiesByUsername)      // username 을 기준으로 User 정보를 가져온다.
-                        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND))
-        );
-    }
+
 
 
 

@@ -127,7 +127,7 @@ public class TokenProvider implements InitializingBean {
             }
 
             if((optionalRefreshToken.get().getRefreshToken()).equals(refreshToken)) {       // redis 에서 refresh token 을 찾고 주어진 토큰과 일치하는 경우
-                log.info("RTS 전략 -> refresh token 사용했으므로 삭제 후 재발급");
+                log.info("RTR 전략 -> refresh token 사용했으므로 삭제 후 재발급");
                 refreshToken = customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername);
                 log.info("access token 만료되었지만, refresh token 일치하여 재발급");
                 return new TokenDto(createNewToken(expiredTokenUsername), refreshToken);

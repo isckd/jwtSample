@@ -66,7 +66,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String accessToken = request.getHeader(AUTHORIZATION_HEADER);                           // 헤더에서 토큰 정보를 꺼내온다.
         String refreshToken = request.getHeader(REFRESH_TOKEN_HEADER);
 
-        if (StringUtils.hasText(accessToken) && accessToken.startsWith("Bearer ")) {            // 토큰 정보가 존재하고, Bearer로 시작하는 경우
+        if (StringUtils.hasText(accessToken) && accessToken.startsWith("Bearer ")) {            // 토큰 정보가 존재하고, Bearer로 시작하는 경우 (RFC 6570)
             accessToken = accessToken.split(" ")[1].trim();                               // Bearer 다음 문자열을 반환한다.
             return Optional.of(new TokenDto(accessToken, refreshToken));
         }

@@ -47,13 +47,13 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new RuntimeException(username + " -> 활성화되어 있지 않습니다.");
         }
 
-        List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
+        List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()              // user 엔티티의 권한을 가져온다.
+                .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))     // SimpleGrantedAuthority 객체로 반환
                 .collect(Collectors.toList());
 
         return new org.springframework.security.core.userdetails.User(user.getUsername(),
                 user.getPassword(),
-                grantedAuthorities);
+                grantedAuthorities);                                // UserDetails 객체에 권한을 넣어준다.
     }
 
     /**
