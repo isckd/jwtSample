@@ -20,7 +20,7 @@ class CustomUserDetailsService(
 ) : UserDetailsService {
 
     /**
-     * DB 에서 유저 정보를 가져온다.
+     * DB 에서 유저 정보를 가져온다. (UserDetails)
      */
     @Transactional
     @Throws(IllegalArgumentException::class)

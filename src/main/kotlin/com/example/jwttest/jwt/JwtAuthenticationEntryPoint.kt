@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletResponse
  */
 @Component
 class JwtAuthenticationEntryPoint : AuthenticationEntryPoint {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @Throws(IOException::class)
     override fun commence(
         request: HttpServletRequest,
@@ -24,9 +27,5 @@ class JwtAuthenticationEntryPoint : AuthenticationEntryPoint {
         response.contentType = "application/json";
         response.writer.write(String.format("{\"error\": \"%s\"}", authException.message));
         log.error("잘못된 접근 발생!");
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(JwtAuthenticationEntryPoint::class.java)
     }
 }

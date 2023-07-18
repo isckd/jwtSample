@@ -26,7 +26,7 @@ class UserController(private val userService: UserService) {
 
     @PostMapping("/signup")
     fun signup(
-        @RequestBody userDto: @Valid UserDto?
+        @RequestBody userDto: @Valid UserDto
     ): ResponseEntity<UserDto> {
         return ResponseEntity.ok(userService.signup(userDto))
     }

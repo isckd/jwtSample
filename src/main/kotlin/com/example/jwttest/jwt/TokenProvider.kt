@@ -34,12 +34,14 @@ class TokenProvider(
 ) : InitializingBean {
     private val tokenValidityInMilliseconds: Long
     private var key: Key? = null
+    private var log = LoggerFactory.getLogger(javaClass)
 
     init {
         tokenValidityInMilliseconds = tokenValidityInSeconds * 1000
     }
 
     /**
+     * 빈 생성 후 의존성주입까지 끝낸 후에
      * ${jwt.secret} 값을 Base64 Decode 하여 key 변수에 할당한다.
      */
     @Throws(Exception::class)
@@ -109,7 +111,7 @@ class TokenProvider(
             if (optionalRefreshToken.get().refreshToken == refreshToken) {                  // redis 에서 refresh token 을 찾고 주어진 토큰과 일치하는 경우
                 log.info("access token 만료되었지만, refresh token 일치하여 재발급. 인증 정보 : '{}'", expiredTokenUsername)
                 refreshToken = customUserDetailsService.deleteAndGenerateRefreshToken(expiredTokenUsername)         // RTR 전략 -> refresh token 사용 시 재발급
-                TokenDto(createNewToken(expiredTokenUsername), refreshToken)
+                TokenDto(createNewToken(expiredTokenUsername), refreshToken)    // TODO 여기에 return ?
             } else {                                                                        // redis 에서 username 에 대한 refresh token 을 찾았지만 주어진 토큰과 일치하지 않는 경우
                 throw CustomException(ErrorCode.REFRESH_TOKEN_ERROR)
             }
@@ -135,7 +137,6 @@ class TokenProvider(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(TokenProvider::class.java)
         private const val AUTHORITIES_KEY = "auth"                          // 토큰에 담길 권한 정보의 Key (value : ROLE_USER, ROLE_ADMIN)
     }
 }

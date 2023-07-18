@@ -28,7 +28,7 @@ class AuthController(
     fun authorize(@RequestBody loginDto: @Valid LoginDto?): ResponseEntity<TokenDto> {
 
         /* username, password 를 받아 Authentication 객체를 생성한다.
-         * .authenticate() 를 통해 UserDetailsService 의 loadUserByUsername() 메소드를 거쳐 유저 인증을 한다.
+         * authenticationManagerBuilder.authenticate() 를 통해 UserDetailsService 의 loadUserByUsername() 메소드를 거쳐 유저 인증을 한다.
          * 인증이 성공하면 SecurityContextHolder 에 User 정보를 저장한다.
          */
         val authenticationToken = UsernamePasswordAuthenticationToken(loginDto?.username, loginDto?.password)

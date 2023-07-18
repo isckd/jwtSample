@@ -21,8 +21,8 @@ class UserService(private val userRepository: UserRepository, private val passwo
      * 회원가입
      */
     @Transactional
-    fun signup(userDto: UserDto?): UserDto? {
-        if (userRepository.findOneWithAuthoritiesByUsername(userDto?.username!!).orElse(null) != null) {
+    fun signup(userDto: UserDto): UserDto {
+        if (userRepository.findOneWithAuthoritiesByUsername(userDto.username!!).orElse(null) != null) {
             throw CustomException(ErrorCode.DUPLICATE_USER)
         }
         val authority = Authority(authorityName = "ROLE_USER")

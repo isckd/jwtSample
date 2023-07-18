@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse
 @Component
 class JwtAccessDeniedHandler : AccessDeniedHandler {
 
+    private val log = LoggerFactory.getLogger(javaClass)
     @Throws(IOException::class)
     override fun handle(
         request: HttpServletRequest,
@@ -26,9 +27,5 @@ class JwtAccessDeniedHandler : AccessDeniedHandler {
         response.contentType = "application/json";
         response.writer.write(String.format("{\"error\": \"%s\"}", "권한이 없습니다."))
         log.error("인가 거부. 권한이 올바르지 않음!!");
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(JwtAccessDeniedHandler::class.java)
     }
 }

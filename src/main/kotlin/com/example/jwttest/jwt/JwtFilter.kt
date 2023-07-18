@@ -22,6 +22,8 @@ class JwtFilter(
         private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
 ) : OncePerRequestFilter() {
 
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         httpServletRequest: HttpServletRequest,
@@ -83,7 +85,6 @@ class JwtFilter(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(JwtFilter::class.java)
         const val AUTHORIZATION_HEADER = "Authorization" // 헤더의 키 값
         const val REFRESH_TOKEN_HEADER = "refreshToken" // refresh token 키 값
     }

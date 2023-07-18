@@ -30,7 +30,7 @@ class SecurityConfig(
         return BCryptPasswordEncoder()
     }
 
-    override fun configure(web: WebSecurity) {
+    override fun configure(web: WebSecurity) {                                      // h2-console 을 사용하기 위함. 운영 시 삭제
         web
             .ignoring()
             .antMatchers(
