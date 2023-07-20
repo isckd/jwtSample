@@ -70,7 +70,7 @@ class SecurityConfig(
 
                 .antMatchers("/swagger-ui/**").permitAll()                        // swagger-ui 허용 (운영 시에는 빼야됨!)
                 .antMatchers("/swagger-resources/**").permitAll()
-//                .antMatchers("/v3/**").permitAll()
+                .antMatchers("/v3/**").permitAll()
                 .anyRequest().authenticated()
     }
 }
