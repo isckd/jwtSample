@@ -41,3 +41,10 @@ jwt:
 
 # .yml ????
 server.servlet.encoding.force: true
+
+keycloak:
+  auth-server-url=http://localhost:8080/auth
+  realm:myrealm
+  resource:myclient
+  public-client:true
+  principal-attribute:preferred_username
