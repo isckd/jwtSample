@@ -15,7 +15,7 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
     @ResponseStatus(UNAUTHORIZED)                                           // 401
     @ExceptionHandler(value = {CustomException.class})
     @ResponseBody
-    protected ErrorDto unAutorized(CustomException e, WebRequest request) {
+    protected ErrorDto unAuthorized(CustomException e, WebRequest request) {
         return new ErrorDto(UNAUTHORIZED.value(), e.getMessage());
     }
 }

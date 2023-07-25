@@ -38,9 +38,6 @@ jwt:
   #[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('jinuk_ye-springboot_2.6.5-noSecurity-jwt-example-java8-NoDB-toy-project-accessToken-secret-key'))
   secret: amludWtfeWUtc3ByaW5nYm9vdF8yLjYuNS1ub1NlY3VyaXR5LWp3dC1leGFtcGxlLWphdmE4LU5vREItdG95LXByb2plY3QtYWNjZXNzVG9rZW4tc2VjcmV0LWtleQ==
   token-validity-in-seconds: 5
-  #[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('jinuk_ye-springboot_2.6.5-noSecurity-jwt-example-java8-NoDB-toy-project-refreshToken-secret-key'))
-  refresh-secret: amludWtfeWUtc3ByaW5nYm9vdF8yLjYuNS1ub1NlY3VyaXR5LWp3dC1leGFtcGxlLWphdmE4LU5vREItdG95LXByb2plY3QtcmVmcmVzaFRva2VuLXNlY3JldC1rZXk=
-  refresh-token-validity-in-seconds: 10
 
 # .yml ????
 server.servlet.encoding.force: true

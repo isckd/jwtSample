@@ -2,32 +2,35 @@ package com.example.jwttest.controller;
 
 import com.example.jwttest.dto.LoginDto;
 import com.example.jwttest.dto.TokensDto;
-import com.example.jwttest.jwt.JwtFilter;
 import com.example.jwttest.jwt.TokenProvider;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/v1")
 public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final TokenProvider tokenProvider;
+    private final RestTemplate restTemplate;
 
-    public AuthController(TokenProvider tokenProvider) {
+    public AuthController(TokenProvider tokenProvider, RestTemplate restTemplate) {
         this.tokenProvider = tokenProvider;
+        this.restTemplate = restTemplate;
     }
 
     @GetMapping("/hello")
     public ResponseEntity<String> hello() {
         return ResponseEntity.ok("Hello World!");
     }
+
+    @GetMapping("/hello2")
+    public String hello2() {return "redirect:/api/v1/hello";}
 
 
     /**
@@ -46,11 +49,19 @@ public class AuthController {
         return ResponseEntity.ok(tokens);
     }
 
-    @GetMapping("/tokenTest")
-    public ResponseEntity<String> validateAccessToken() {
-        // TODO filter 에서 검증
+    /**
+     * 웹/앱에서 보낸 accessToken 이 만료되었을 때, 서버는 웹/앱에 refreshToken 을 요청하는 api 로 redirect 하고,
+     * 웹/앱은 refreshToken 을 담아 보내는 API 가 아래의 것.
+     */
+    @PostMapping("/refresh")
+    public String refreshTokenAuthorize(@RequestParam String originURI, @RequestBody String refreshToken) {
+        System.out.println("originURI : " + originURI);
+        System.out.println("refreshToken : " + refreshToken);
 
-        log.info("token is valid");
-        return ResponseEntity.ok("Token is valid");
+        // TODO refreshToken 검증하는 로직 거쳐야 함. (refresh token 유효기간도 설정하고)
+
+        return refreshToken;
     }
+
+
 }

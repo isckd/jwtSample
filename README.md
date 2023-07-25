@@ -2,62 +2,32 @@
 
 ## Springboot 2.6.5, Java 8 (Compile), Kotlin 1.6.10 (코틀린은 kotlin branch)
 
-##  로컬에 Redis 설치해서 띄워야 함
-
-### 2023/07/30
-- jwt 토큰 검증 및 생성 로직 구현
-- 관련 API 사용방법
-  - /api/signup (POST, 계정 생성)
-    - request body
-      - username
-      - password
-      - nickname
-
-  - /api/authenticate (POST, 로그인)
-    - request body
-      - username
-      - password
-    - Tests (Postman의 탭)
-      - var jsonData = JSON.parse(responseBody)
-        pm.globals.set("jwt_tutorial_token", jsonData.token);
-      - 위의 코드를 Tests 탭에 넣어주면, jwt_tutorial_token 이라는 변수에 토큰이 저장됨.
-    - 현재 토큰 유효기간 5초
-
-  - /api/test-redirect (POST, 새로고침)
-    - 헤더를 토큰으로 받음
-    - postman 의 Authorization 탭에서 Type 을 Bearer Token 으로 설정하고, Token 에 {{jwt_tutorial_token}} 을 입력하면 됨.
-    - 로그인(authenticate) 이후 새로고침 할 때, /api/user 로 redirect 됨. 잘 되는지 테스트해보기.
-
-  - /api/user (GET, 사용자 정보 조회 - ROLE_USER 을 포함하면 가능)
-    - 헤더를 토큰으로 받음
-    - postman 의 Authorization 탭에서 Type 을 Bearer Token 으로 설정하고, Token 에 {{jwt_tutorial_token}} 을 입력하면 됨.
-    - request body X
-
-  - /api/user/{username} (GET, 관리자 정보 조회 - ROLE_ADMIN 만 가능)
-    - 헤더를 토큰으로 받음
-    - Admin 계정 생성하는 API 는 없으므로 직접 DB에 넣고 해야 함.
-    - postman 의 Authorization 탭에서 Type 을 Bearer Token 으로 설정하고, Token 에 {{jwt_tutorial_token}} 을 입력하면 됨.
 
 
-## flow (핵심 로직만)
-로그인(/authenticate) 시 access token, refresh token 둘 다 발급 (refresh token 은 redis 에 저장)
-- access token 만료 시간 5초, refresh token 만료 시간 10초 (테스트용이므로 짧게)
-- access token HS512 알고리즘으로 검증
-  - 인증 실패 시 401 에러
-  - 인증 성공 시 200
-  - 만료된 access token 시 refresh token 검증
-    - refresh token 검증 성공 시 access token 재발급 (Refresh token Rotation 전략으로 refresh token 도 재발급)
-    - refresh token 검증 실패 시 에러
+### basic flow
+- 앱/웹은 사용자가 광고를 클릭 시 access 토큰을 보내는지 확인한다.
+  - 토큰이 없으면 서버로 /api/login 요청에 userId, CI 를 body에 담아 보낸다.
+    - 이 때, 원래 보내기로 한 url을 query string 으로 보낸다.
+  - 토큰이 있으면 서버로 협의한 api 를 보낸다.
+- 서버는 /api/login 요청을 받으면, userId 와 CI 를 가지고 MAP 에서 검증을 실시한다.
+  - MAP 검증에 성공하면 유저의 정보(나이, 성별 등)를 가지고 access token 을 생성하고, refresh token 도 생성해 앱/웹에 응답한다.
+    - 이 때, 서버는 받은 query string 의 url 을 가지고 서버 내부에서 로직을 처리한다.
+  - MAP 검증에 실패하면 401 에러를 응답한다.
+- 서버는 협의한 api 를 받으면, access token 을 검증한다.
+  - 검증에 성공하면 서버 내부에서 관련 로직을 처리한다.
+  - 검증에 실패하면 401 에러를 응답한다.
+  - 만료된 access token 이면, 웹/앱에 refresh token 을 요청하는 api 로 redirect 한다. 이 때, 원래 요청한 url을 query string 으로 보낸다.
+- 앱/웹은 refresh token 을 요청하는 api 를 받으면, 서버의 /api/refresh api로 refresh token 을 보낸다. 이 때, 받은 query string 을 다시 서버로 query string 으로 보낸다.
+- 서버는 /api/refresh api 로 refresh token 을 받으면, refresh token 을 검증한다.
+  - 검증에 성공하면, access token 과 refresh token 을 새로 생성하여 앱/웹에 보낸다. (RTR 전략)
+  - 검증에 실패하면 401 에러를 응답한다.
+  - 만료된 refresh token 이면, 앱/웹에 /api/login 으로 요청해달라는 api 보낸다. 이 때, 원래 요청한 url 을 query string 으로 보낸다. 
 
 
-- 테스트코드 추가해야 함.
-- https://techblog.woowahan.com/9232/ Actuator 관련 설정 추가해야 함.
-- API GATEWAY 로서 동작할것인가
-- https ssl 인증서는 구현할것인가
-- 특정 origin 만 허용할 것인가
-
-문제 제기 : 과연 Redis 가 맞는것인가?
-- 회원이 1000만 명이라면? 1000만 개의 refresh token 을 저장해야 하는가?
-
-추가 개발하면 좋을 것 같은 것들
-- HS512 말고 RSA 암호화 알고리즘 사용? -> 다만 웹/앱 단에서도 공개키를 사용할 수 있어야 함. (과연 실무 협의가 될지..)
+mermaid markdown 으로 sequence diagram 작성하기
+https://newdevsguide.com/2023/04/10/mermaid-sequence-diagrams/
+```mermaid
+sequenceDiagram
+    Client ->> Web/App: /api/login
+    Web/App -->> Client: 200 OK & JWT
+```
